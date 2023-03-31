@@ -1,0 +1,10 @@
+alembic
+auth-lib-profcomff[fastapi]
+fastapi
+fastapi-sqlalchemy
+gunicorn
+logging-profcomff
+psycopg2-binary
+pydantic[dotenv]
+SQLAlchemy
+uvicorn
