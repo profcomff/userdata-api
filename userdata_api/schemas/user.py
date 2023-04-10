@@ -16,7 +16,7 @@ class UserInterface:
     User: type[Base] = create_model("User", __base__=Base)
 
     @staticmethod
-    async def __create_model(session: Session) -> type[Base]:
+    def __create_model(session: Session) -> type[Base]:
         result = {}
         categories = Category.query(session=session).all()
         for category in categories:
@@ -30,8 +30,8 @@ class UserInterface:
             result[category.name] = (model, ...)
         return create_model("User", __base__=Base, **result)
 
-    async def refresh(self, app: FastAPI, session: Session):
-        _model: type[Base] = await UserInterface.__create_model(session)
+    def refresh(self, app: FastAPI, session: Session):
+        _model: type[Base] = UserInterface.__create_model(session)
         fields = _model.__fields__
         annotations = _model.__annotations__
         self.User.__fields__ = deepcopy(fields)
@@ -52,7 +52,7 @@ def refreshing(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
     async def decorated(request: Request, *args: P.args, **kwargs: P.kwargs) -> T:
         app = request.app
         _res = await fn(request, *args, **kwargs)
-        await user_interface.refresh(app, db.session)
+        user_interface.refresh(app, db.session)
         return _res
 
     return decorated

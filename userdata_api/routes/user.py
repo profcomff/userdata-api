@@ -1,4 +1,7 @@
-from fastapi import APIRouter
+from typing import Any
+
+from auth_lib.fastapi import UnionAuth
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
 
 from userdata_api.schemas.user import user_interface
@@ -9,5 +12,9 @@ user = APIRouter(prefix="/user", tags=["User"])
 
 
 @user.get("/{id}", response_model=user_interface.User)
-async def get_user_info(id: int):
-    return get_user_info_func(db.session, id, [])
+async def get_user_info(
+    id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
+):
+    if "userinfo.user.read" not in user["session_scopes"] and user["user_id"] != id:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return get_user_info_func(db.session, id, user["session_scopes"])

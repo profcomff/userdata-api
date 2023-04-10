@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Request
+from typing import Any
+
+from auth_lib.fastapi import UnionAuth
+from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
 
@@ -13,7 +16,11 @@ source = APIRouter(prefix="/source", tags=["Source"])
 
 @source.post("", response_model=SourceGet)
 @refreshing
-async def create_source(request: Request, source_inp: SourcePost) -> SourceGet:
+async def create_source(
+    request: Request,
+    source_inp: SourcePost,
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.create"], allow_none=False, auto_error=True)),
+) -> SourceGet:
     source = Source.query(session=db.session).filter(Source.name == source_inp.name).all()
     if source:
         raise AlreadyExists(Source, source_inp.name)
@@ -32,11 +39,20 @@ async def get_sources() -> list[SourceGet]:
 
 @source.patch("/{id}", response_model=SourceGet)
 @refreshing
-async def patch_source(request: Request, source_inp: SourcePatch) -> SourceGet:
-    return SourceGet.from_orm(Source.update(session=db.session, **source_inp.dict(exclude_unset=True)))
+async def patch_source(
+    request: Request,
+        id: int,
+    source_inp: SourcePatch,
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.update"], allow_none=False, auto_error=True)),
+) -> SourceGet:
+    return SourceGet.from_orm(Source.update(id, session=db.session, **source_inp.dict(exclude_unset=True)))
 
 
 @source.delete("/{id}")
 @refreshing
-async def delete_source(request: Request, id: int) -> None:
+async def delete_source(
+    request: Request,
+    id: int,
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.delete"], allow_none=False, auto_error=True)),
+) -> None:
     Source.delete(id, session=db.session)

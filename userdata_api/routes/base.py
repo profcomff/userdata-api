@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 from fastapi_sqlalchemy import DBSessionMiddleware, db
 from pydantic import BaseModel
 
@@ -35,10 +36,31 @@ app.add_middleware(
 )
 
 
+def no_cache_openapi():
+    app.openapi_schema = None
+    user_interface.refresh(app, db.session)
+    app.openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        openapi_version=app.openapi_version,
+        description=app.description,
+        terms_of_service=app.terms_of_service,
+        contact=app.contact,
+        license_info=app.license_info,
+        routes=app.routes,
+        tags=app.openapi_tags,
+        servers=app.servers,
+    )
+    return app.openapi_schema
+
+
+app.openapi = no_cache_openapi
+
+
 @app.on_event("startup")
 async def create_models():
     with db():
-        await user_interface.refresh(app, db.session)
+        user_interface.refresh(app, db.session)
 
 
 app.add_middleware(
