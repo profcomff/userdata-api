@@ -8,9 +8,7 @@ def test_create_with_scopes(client, dbsession, random_string):
     name = f"test{random_string()}"
     name2 = f"test.{random_string()}"
     name3 = f"test.{random_string()}.test"
-    response = client.post(
-        "/category", json={"name": name, "scopes": [name2, name3]}
-    )
+    response = client.post("/category", json={"name": name, "scopes": [name2, name3]})
     assert response.status_code == 200
     category = dbsession.query(Category).filter(Category.name == name).one()
     assert category.name == name
@@ -47,8 +45,16 @@ def test_get_all(client, dbsession, category):
     category2 = category()
     response = client.get(f"/category")
     assert response.status_code == 200
-    assert {"id": category1.id, "name": category1.name, "scopes": [scope.name for scope in category1.scopes]} in response.json()
-    assert {"id": category2.id, "name": category2.name, "scopes": [scope.name for scope in category2.scopes]} in response.json()
+    assert {
+        "id": category1.id,
+        "name": category1.name,
+        "scopes": [scope.name for scope in category1.scopes],
+    } in response.json()
+    assert {
+        "id": category2.id,
+        "name": category2.name,
+        "scopes": [scope.name for scope in category2.scopes],
+    } in response.json()
 
 
 def test_update(client, dbsession, category):

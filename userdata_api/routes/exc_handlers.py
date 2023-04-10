@@ -1,9 +1,9 @@
 import starlette
 from starlette.responses import JSONResponse
 
-from .base import app
 from ..exceptions import ObjectNotFound
 from ..schemas.response_model import ResponseModel
+from .base import app
 
 
 @app.exception_handler(ObjectNotFound)

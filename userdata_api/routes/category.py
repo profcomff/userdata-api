@@ -73,7 +73,9 @@ async def patch_category(
     db.session.commit()
     del category
     category = Category.get(id, session=db.session)
-    return CategoryGet(**{"name": category.name, "id": category.id, "scopes": [scope.name for scope in category.scopes]})
+    return CategoryGet(
+        **{"name": category.name, "id": category.id, "scopes": [scope.name for scope in category.scopes]}
+    )
 
 
 @category.delete("/{id}")

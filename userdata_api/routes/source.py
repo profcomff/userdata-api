@@ -41,7 +41,7 @@ async def get_sources() -> list[SourceGet]:
 @refreshing
 async def patch_source(
     request: Request,
-        id: int,
+    id: int,
     source_inp: SourcePatch,
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.update"], allow_none=False, auto_error=True)),
 ) -> SourceGet:

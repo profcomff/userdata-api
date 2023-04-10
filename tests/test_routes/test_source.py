@@ -21,8 +21,6 @@ def test_create(client, dbsession, random_string):
     assert response.json()["id"] == q.id
 
 
-
-
 def test_get(client, dbsession, source):
     _source = source()
     response = client.get(f"/source/{_source.id}")
@@ -36,7 +34,7 @@ def test_get_all(client, dbsession, source):
     source1 = source()
     source2 = source()
     response = client.get(f"/source")
-    assert response.status_code== 200
+    assert response.status_code == 200
     assert SourceGet.from_orm(source1).dict() in response.json()
     assert SourceGet.from_orm(source2).dict() in response.json()
 
@@ -64,8 +62,3 @@ def test_delete(client, dbsession, source):
     with pytest.raises(ObjectNotFound):
         Source.get(_source.id, session=dbsession)
     assert Source.get(_source.id, with_deleted=True, session=dbsession)
-
-
-
-
-

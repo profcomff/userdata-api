@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
+from pytest_mock import mocker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from starlette import status
@@ -11,13 +12,13 @@ from starlette import status
 from userdata_api.models.db import *
 from userdata_api.routes.base import app
 from userdata_api.settings import get_settings
-from pytest_mock import mocker
 
 
 @pytest.fixture
 def random_string():
     def _random_string():
         return "".join([random.choice(string.ascii_lowercase) for _ in range(12)])
+
     yield _random_string
 
 
@@ -109,7 +110,6 @@ def category(dbsession, random_string):
     dbsession.commit()
 
 
-
 @pytest.fixture
 def param(dbsession, category, random_string):
     params = []
@@ -158,7 +158,7 @@ def info(dbsession, source, param, random_string):
         _source = source()
         _param = param()
         time_ = f"test{random_string()}"
-        __info = Info(value=f"test{time_}", source_id=_source.id, param_id = _param.id, owner_id=0)
+        __info = Info(value=f"test{time_}", source_id=_source.id, param_id=_param.id, owner_id=0)
         dbsession.add(__info)
         dbsession.commit()
         infos.append(__info)
@@ -168,4 +168,3 @@ def info(dbsession, source, param, random_string):
     for row in infos:
         dbsession.delete(row)
     dbsession.commit()
-

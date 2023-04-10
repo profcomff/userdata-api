@@ -15,8 +15,8 @@ def test_create(client, dbsession, param, source, random_string):
     response = client.post("/info", json={"owner_id": 0, "source_id": _source.id, "param_id": _param.id, "value": name})
     assert response.status_code == 200
     assert response.json()["value"] == name
-    assert response.json()["source_id"] ==  _source.id
-    assert response.json()["param_id"] ==  _param.id
+    assert response.json()["source_id"] == _source.id
+    assert response.json()["param_id"] == _param.id
     assert response.json()["owner_id"] == 0
     info = Info.get(response.json()["id"], session=dbsession)
     assert info
@@ -25,7 +25,6 @@ def test_create(client, dbsession, param, source, random_string):
     assert response.json()["param_id"] == info.param_id
     assert response.json()["owner_id"] == info.owner_id
     dbsession.query(Info).filter(Info.id == response.json()["id"]).delete()
-
 
 
 def test_get(client, dbsession, info):
@@ -37,7 +36,6 @@ def test_get(client, dbsession, info):
     assert response.json()["source_id"] == _info.source_id
     assert response.json()["param_id"] == _info.param_id
     assert response.json()["value"] == _info.value
-
 
 
 def test_get_all(client, dbsession, info):
@@ -66,7 +64,6 @@ def test_update(client, dbsession, info):
     assert response.json()["owner_id"] == q.owner_id
 
 
-
 def test_delete(client, dbsession, info):
     _info = info()
     response = client.delete(f"/info/{_info.id}")
@@ -75,8 +72,3 @@ def test_delete(client, dbsession, info):
         Info.get(_info.id, session=dbsession)
     q = Info.get(_info.id, session=dbsession, with_deleted=True)
     assert q
-
-
-
-
-

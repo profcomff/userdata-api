@@ -11,7 +11,10 @@ from userdata_api.schemas.param import ParamGet
 def test_create_with_scopes(client, dbsession, category, random_string):
     _category = category()
     name = f"test{random_string()}"
-    response = client.post("/param", json={"name": name, "category_id": _category.id, "type": "last", "changeable": "true", "is_required": "true"})
+    response = client.post(
+        "/param",
+        json={"name": name, "category_id": _category.id, "type": "last", "changeable": "true", "is_required": "true"},
+    )
     assert response.status_code == 200
     assert response.json()["id"]
     assert response.json()["name"] == name
@@ -29,8 +32,6 @@ def test_create_with_scopes(client, dbsession, category, random_string):
     assert param.category == _category
     dbsession.delete(param)
     dbsession.flush()
-
-
 
 
 def test_get(client, dbsession, param):
@@ -72,17 +73,11 @@ def test_update(client, dbsession, param):
     assert response.json()["category_id"] == q.category_id
 
 
-
 def test_delete(client, dbsession, param):
     _param = param()
-    response =client.delete(f"/param/{_param.id}")
+    response = client.delete(f"/param/{_param.id}")
     assert response.status_code == 200
     with pytest.raises(ObjectNotFound):
         query1 = Param.get(_param.id, session=dbsession)
     query2 = Param.get(_param.id, with_deleted=True, session=dbsession)
     assert query2
-
-
-
-
-
