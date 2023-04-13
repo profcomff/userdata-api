@@ -45,6 +45,9 @@ def client(mocker):
             {"id": 0, "name": "userdata.info.delete", "comment": ""},
             {"id": 0, "name": "userdata.info.update", "comment": ""},
             {"id": 0, "name": "userdata.info.create", "comment": ""},
+            {"id": 0, "name": "it.needs.by.test.user.get.first", "comment": ""},
+            {"id": 0, "name": "it.needs.by.test.user.get.second", "comment": ""},
+            {"id": 0, "name": "it.needs.by.test.user.get.third", "comment": ""},
         ],
         "user_scopes": [
             {"id": 0, "name": "userdata.category.create", "comment": ""},
@@ -152,11 +155,13 @@ def source(dbsession, random_string):
 @pytest.fixture
 def info(dbsession, source, param, random_string):
     infos = []
+    _source = source()
+    _param = param()
 
     def _info():
         nonlocal infos
-        _source = source()
-        _param = param()
+        nonlocal _source
+        nonlocal _param
         time_ = f"test{random_string()}"
         __info = Info(value=f"test{time_}", source_id=_source.id, param_id=_param.id, owner_id=0)
         dbsession.add(__info)
@@ -168,3 +173,66 @@ def info(dbsession, source, param, random_string):
     for row in infos:
         dbsession.delete(row)
     dbsession.commit()
+
+
+@pytest.fixture
+def category_no_scopes(dbsession, random_string):
+    categories = []
+
+    def _category_no_scopes():
+        nonlocal categories
+        name = f"test{random_string()}"
+        __category = Category(name=name)
+        dbsession.add(__category)
+        dbsession.commit()
+        categories.append(__category)
+        return __category
+
+    yield _category_no_scopes
+    dbsession.expire_all()
+    for row in categories:
+        dbsession.delete(row)
+    dbsession.commit()
+
+
+@pytest.fixture
+def param_no_scopes(dbsession, category_no_scopes, random_string):
+    params = []
+    _category = category_no_scopes()
+
+    def _param_no_scopes():
+        nonlocal _category
+        nonlocal params
+        time_ = f"test{random_string()}"
+        __param = Param(name=f"test{time_}", category_id=_category.id, type="last", changeable=True, is_required=True)
+        dbsession.add(__param)
+        dbsession.commit()
+        params.append(__param)
+        return __param
+
+    yield _param_no_scopes
+    for row in params:
+        dbsession.delete(row)
+    dbsession.commit()
+
+
+@pytest.fixture
+def info_no_scopes(dbsession, source, param_no_scopes, random_string):
+    infos = []
+
+    def _info_no_scopes():
+        nonlocal infos
+        _source = source()
+        _param = param_no_scopes()
+        time_ = f"test{random_string()}"
+        __info = Info(value=f"test{time_}", source_id=_source.id, param_id=_param.id, owner_id=0)
+        dbsession.add(__info)
+        dbsession.commit()
+        infos.append(__info)
+        return __info
+
+    yield _info_no_scopes
+    for row in infos:
+        dbsession.delete(row)
+    dbsession.commit()
+

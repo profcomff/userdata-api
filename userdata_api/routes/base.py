@@ -7,6 +7,8 @@ from pydantic import BaseModel
 from userdata_api import __version__
 from userdata_api.schemas.user import user_interface
 from userdata_api.settings import get_settings
+from fastapi import Request
+from userdata_api.utils.docs import aio_get_openapi
 
 from .category import category
 from .info import info
@@ -26,6 +28,7 @@ app = FastAPI(
     root_path=settings.ROOT_PATH if __version__ != 'dev' else '/',
     docs_url=None if __version__ != 'dev' else '/docs',
     redoc_url=None,
+    openapi_url="/openapi.json"
 )
 
 
@@ -35,32 +38,14 @@ app.add_middleware(
     engine_args={"pool_pre_ping": True, "isolation_level": "AUTOCOMMIT"},
 )
 
-
-def no_cache_openapi():
-    app.openapi_schema = None
-    user_interface.refresh(app, db.session)
-    app.openapi_schema = get_openapi(
-        title=app.title,
-        version=app.version,
-        openapi_version=app.openapi_version,
-        description=app.description,
-        terms_of_service=app.terms_of_service,
-        contact=app.contact,
-        license_info=app.license_info,
-        routes=app.routes,
-        tags=app.openapi_tags,
-        servers=app.servers,
-    )
-    return app.openapi_schema
-
-
-app.openapi = no_cache_openapi
-
+@app.get("/openapi.json", include_in_schema=False)
+async def get_docs(request: Request):
+    return await aio_get_openapi(request)
 
 @app.on_event("startup")
 async def create_models():
     with db():
-        user_interface.refresh(app, db.session)
+        await user_interface.refresh(db.session)
 
 
 app.add_middleware(

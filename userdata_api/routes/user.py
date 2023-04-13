@@ -1,8 +1,10 @@
+import json
 from typing import Any
 
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi_sqlalchemy import db
+from starlette.responses import Response
 
 from userdata_api.schemas.user import user_interface
 from userdata_api.utils.user import get_user_info as get_user_info_func
@@ -17,4 +19,10 @@ async def get_user_info(
 ):
     if "userinfo.user.read" not in user["session_scopes"] and user["user_id"] != id:
         raise HTTPException(status_code=403, detail="Forbidden")
-    return get_user_info_func(db.session, id, user["session_scopes"])
+    await user_interface.refresh(db.session)
+    res = await get_user_info_func(db.session, id, user["session_scopes"])
+    user_interface.User(**res)
+    return Response(content=json.dumps(res), media_type="application/json")
+
+
+
