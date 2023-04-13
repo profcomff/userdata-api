@@ -23,6 +23,3 @@ async def get_user_info(
     res = await get_user_info_func(db.session, id, user["session_scopes"])
     user_interface.User(**res)
     return Response(content=json.dumps(res), media_type="application/json")
-
-
-

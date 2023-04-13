@@ -30,7 +30,7 @@ class UserInterface:
             result[category.name] = (model, None)
         return create_model("User", __base__=Base, **result)
 
-    async def refresh(self,  session: Session):
+    async def refresh(self, session: Session):
         _model: type[Base] = await UserInterface.__create_model(session)
         fields = _model.__fields__
         annotations = _model.__annotations__

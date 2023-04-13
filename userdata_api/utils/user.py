@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.collections import InstrumentedList
 
-from userdata_api.models.db import Info, Param, Type, Source
+from userdata_api.models.db import Info, Param, Source, Type
 from userdata_api.schemas.user import user_interface
 
 
@@ -23,10 +23,21 @@ async def get_user_info(session: Session, user_id: int, scopes: list[dict[str, s
         if param.type == Type.ALL:
             result[param.category.name][param.name] = [_v.value for _v in v]
         elif param.type == Type.LAST:
-            q: Info = Info.query(session=session).filter(Info.owner_id == user_id, Info.param_id == param.id).order_by(Info.modify_ts.desc()).first()
+            q: Info = (
+                Info.query(session=session)
+                .filter(Info.owner_id == user_id, Info.param_id == param.id)
+                .order_by(Info.modify_ts.desc())
+                .first()
+            )
             result[param.category.name][param.name] = q.value
         elif param.type == Type.MOST_TRUSTED:
-            q: Info = Info.query(session=session).join(Source).filter(Info.owner_id == user_id, Info.param_id == param.id).order_by(Source.trust_level.desc()).order_by(
-                Info.modify_ts.desc()).first()
+            q: Info = (
+                Info.query(session=session)
+                .join(Source)
+                .filter(Info.owner_id == user_id, Info.param_id == param.id)
+                .order_by(Source.trust_level.desc())
+                .order_by(Info.modify_ts.desc())
+                .first()
+            )
             result[param.category.name][param.name] = q.value
     return result

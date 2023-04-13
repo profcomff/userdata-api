@@ -1,10 +1,10 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 
-from fastapi import FastAPI
-from concurrent.futures import ThreadPoolExecutor
+from fastapi import FastAPI, Request
 from fastapi.openapi.utils import get_openapi
-from fastapi import Request
+
 
 thread_pool = ThreadPoolExecutor()
 
@@ -12,7 +12,7 @@ thread_pool = ThreadPoolExecutor()
 async def aio_get_openapi(request: Request):
     app = request.app
     loop = asyncio.get_event_loop()
-    kwargs= dict(
+    kwargs = dict(
         title=app.title,
         version=app.version,
         openapi_version=app.openapi_version,
@@ -25,5 +25,3 @@ async def aio_get_openapi(request: Request):
         servers=app.servers,
     )
     return await loop.run_in_executor(thread_pool, partial(get_openapi, **kwargs))
-
-

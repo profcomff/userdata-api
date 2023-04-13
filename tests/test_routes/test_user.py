@@ -9,9 +9,6 @@ from userdata_api.models.db import *
 from userdata_api.schemas.source import SourceGet
 
 
-
-
-
 def test_get(client, dbsession, source, random_string, info_no_scopes):
     info1: Info = info_no_scopes()
     scope1 = Scope(name="it.needs.by.test.user.get.first", category_id=info1.category.id)
@@ -52,13 +49,18 @@ def test_get_a_few(client, dbsession, category_no_scopes, source, random_string)
     category1 = category_no_scopes()
     category2 = category_no_scopes()
     category3 = category_no_scopes()
-    param1 = Param(name=f"test{random_string()}", category_id=category1.id, type="last", changeable=True, is_required=True)
-    param2 = Param(name=f"test{random_string()}", category_id=category1.id, type="last", changeable=True,
-                   is_required=True)
-    param3 = Param(name=f"test{random_string()}", category_id=category2.id, type="last", changeable=True,
-                   is_required=True)
-    param4 = Param(name=f"test{random_string()}", category_id=category3.id, type="last", changeable=True,
-                   is_required=True)
+    param1 = Param(
+        name=f"test{random_string()}", category_id=category1.id, type="last", changeable=True, is_required=True
+    )
+    param2 = Param(
+        name=f"test{random_string()}", category_id=category1.id, type="last", changeable=True, is_required=True
+    )
+    param3 = Param(
+        name=f"test{random_string()}", category_id=category2.id, type="last", changeable=True, is_required=True
+    )
+    param4 = Param(
+        name=f"test{random_string()}", category_id=category3.id, type="last", changeable=True, is_required=True
+    )
     dbsession.add_all([param1, param2, param3, param4])
     dbsession.flush()
     info1 = Info(value=f"test{random_string()}", source_id=source.id, param_id=param1.id, owner_id=0)
@@ -85,20 +87,24 @@ def test_get_a_few(client, dbsession, category_no_scopes, source, random_string)
     dbsession.commit()
 
 
-
 def test_get_a_few(client, dbsession, category_no_scopes, source, random_string):
     source1 = source()
     source2 = source()
     category1 = category_no_scopes()
     category2 = category_no_scopes()
     category3 = category_no_scopes()
-    param1 = Param(name=f"test{random_string()}", category_id=category1.id, type="all", changeable=True, is_required=True)
-    param2 = Param(name=f"test{random_string()}", category_id=category1.id, type="all", changeable=True,
-                   is_required=True)
-    param3 = Param(name=f"test{random_string()}", category_id=category2.id, type="last", changeable=True,
-                   is_required=True)
-    param4 = Param(name=f"test{random_string()}", category_id=category3.id, type="most_trusted", changeable=True,
-                   is_required=True)
+    param1 = Param(
+        name=f"test{random_string()}", category_id=category1.id, type="all", changeable=True, is_required=True
+    )
+    param2 = Param(
+        name=f"test{random_string()}", category_id=category1.id, type="all", changeable=True, is_required=True
+    )
+    param3 = Param(
+        name=f"test{random_string()}", category_id=category2.id, type="last", changeable=True, is_required=True
+    )
+    param4 = Param(
+        name=f"test{random_string()}", category_id=category3.id, type="most_trusted", changeable=True, is_required=True
+    )
     dbsession.add_all([param1, param2, param3, param4])
     dbsession.flush()
     source2.trust_level = 9
@@ -150,7 +156,9 @@ def test_get_last_most_trusted(client, dbsession, category_no_scopes, source, ra
     source1 = source()
     source2 = source()
     category1 = category_no_scopes()
-    param1 = Param(name=f"test{random_string()}", category_id=category1.id, type="most_trusted", changeable=True, is_required=True)
+    param1 = Param(
+        name=f"test{random_string()}", category_id=category1.id, type="most_trusted", changeable=True, is_required=True
+    )
     dbsession.add(param1)
     dbsession.flush()
     source2.trust_level = 9
@@ -175,20 +183,3 @@ def test_get_last_most_trusted(client, dbsession, category_no_scopes, source, ra
     dbsession.flush()
     dbsession.delete(param1)
     dbsession.commit()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

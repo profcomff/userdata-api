@@ -235,4 +235,3 @@ def info_no_scopes(dbsession, source, param_no_scopes, random_string):
     for row in infos:
         dbsession.delete(row)
     dbsession.commit()
-
