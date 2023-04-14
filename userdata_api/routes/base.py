@@ -16,8 +16,6 @@ from .source import source
 from .user import user
 
 
-UserModel: BaseModel | None = None
-
 settings = get_settings()
 app = FastAPI(
     title='Сервис пользовательских данных',
