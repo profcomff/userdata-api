@@ -49,7 +49,7 @@ jobs:
           remove-link-from-badge: false
           unique-id-for-comment: python3.11
           junitxml-path: ./pytest.xml
-          junitxml-title: JUnit Xml Summary
+          junitxml-title: Summary
   linting:
     runs-on: ubuntu-latest
     steps:
