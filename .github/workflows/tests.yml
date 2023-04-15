@@ -53,7 +53,7 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@mastre
+      - uses: actions/checkout@master
       - uses: actions/setup-python@v4
         with:
           python-version: 3.11
