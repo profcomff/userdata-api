@@ -6,9 +6,10 @@ import sqlalchemy.exc
 from userdata_api.exceptions import ObjectNotFound
 from userdata_api.models.db import *
 from userdata_api.schemas.source import SourceGet
+from userdata_api.utils.utils import random_string
 
 
-def test_create(client, dbsession, random_string):
+def test_create(client, dbsession):
     name = f"test{random_string()}"
     response = client.post("/source", json={"name": name, "trust_level": 12})
     assert response.status_code == 422

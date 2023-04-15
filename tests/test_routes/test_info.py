@@ -6,9 +6,10 @@ import sqlalchemy.exc
 from userdata_api.exceptions import ObjectNotFound
 from userdata_api.models.db import *
 from userdata_api.schemas.info import InfoGet
+from userdata_api.utils.utils import random_string
 
 
-def test_create(client, dbsession, param, source, random_string):
+def test_create(client, dbsession, param, source):
     _param = param()
     _source = source()
     name = f"test{random_string()}"

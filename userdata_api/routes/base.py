@@ -38,6 +38,8 @@ app.add_middleware(
 
 @app.get("/openapi.json", include_in_schema=False)
 async def get_docs(request: Request):
+    app: FastAPI = request.app
+    app.openapi_schema = None
     return await aio_get_openapi(request)
 
 

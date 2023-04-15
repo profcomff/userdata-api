@@ -1,25 +1,12 @@
-import random
-import string
-from unittest.mock import patch
-
 import pytest
 from fastapi.testclient import TestClient
-from pytest_mock import mocker
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from starlette import status
 
 from userdata_api.models.db import *
 from userdata_api.routes.base import app
 from userdata_api.settings import get_settings
-
-
-@pytest.fixture
-def random_string():
-    def _random_string():
-        return "".join([random.choice(string.ascii_lowercase) for _ in range(12)])
-
-    yield _random_string
+from userdata_api.utils.utils import random_string
 
 
 @pytest.fixture
@@ -81,7 +68,10 @@ def dbsession():
 
 
 @pytest.fixture
-def category(dbsession, random_string):
+def category(dbsession):
+    """
+    Вызов создает категорию с двумя рандомными скоупами и возвращщает ее
+    """
     categories = []
     scopes = []
 
@@ -114,7 +104,10 @@ def category(dbsession, random_string):
 
 
 @pytest.fixture
-def param(dbsession, category, random_string):
+def param(dbsession, category):
+    """
+    Вызов создает параметр в категории с двумя рандомными скоупами и возвращает его
+    """
     params = []
 
     def _param():
@@ -134,7 +127,10 @@ def param(dbsession, category, random_string):
 
 
 @pytest.fixture
-def source(dbsession, random_string):
+def source(dbsession):
+    """
+    Вызов создает источник в и возвращает его
+    """
     sources = []
 
     def _source():
@@ -153,7 +149,10 @@ def source(dbsession, random_string):
 
 
 @pytest.fixture
-def info(dbsession, source, param, random_string):
+def info(dbsession, source, param):
+    """
+    Вызов создает информацмю в с параметром param() и источником source()
+    """
     infos = []
     _source = source()
     _param = param()
@@ -176,7 +175,10 @@ def info(dbsession, source, param, random_string):
 
 
 @pytest.fixture
-def category_no_scopes(dbsession, random_string):
+def category_no_scopes(dbsession):
+    """
+    Вызов создает категорию без скоупов и возвращает ее
+    """
     categories = []
 
     def _category_no_scopes():
@@ -196,7 +198,10 @@ def category_no_scopes(dbsession, random_string):
 
 
 @pytest.fixture
-def param_no_scopes(dbsession, category_no_scopes, random_string):
+def param_no_scopes(dbsession, category_no_scopes):
+    """
+    Вызов создает параметр в категории без скоупов и возвращает его
+    """
     params = []
     _category = category_no_scopes()
 
@@ -217,7 +222,10 @@ def param_no_scopes(dbsession, category_no_scopes, random_string):
 
 
 @pytest.fixture
-def info_no_scopes(dbsession, source, param_no_scopes, random_string):
+def info_no_scopes(dbsession, source, param_no_scopes):
+    """
+    Вызов создает информацию для параметра без скоупов и для источника source() и возвращает ее
+    """
     infos = []
 
     def _info_no_scopes():

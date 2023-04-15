@@ -7,9 +7,10 @@ import sqlalchemy.exc
 from userdata_api.exceptions import ObjectNotFound
 from userdata_api.models.db import *
 from userdata_api.schemas.source import SourceGet
+from userdata_api.utils.utils import random_string
 
 
-def test_get(client, dbsession, source, random_string, info_no_scopes):
+def test_get(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()
     scope1 = Scope(name="it.needs.by.test.user.get.first", category_id=info1.category.id)
     scope2 = Scope(name="it.needs.by.test.user.get.second", category_id=info1.category.id)
@@ -26,7 +27,7 @@ def test_get(client, dbsession, source, random_string, info_no_scopes):
     dbsession.commit()
 
 
-def test_get_no_all_scopes(client, dbsession, source, random_string, info_no_scopes):
+def test_get_no_all_scopes(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()
     scope1 = Scope(name="it.needs.by.test.user.get.first", category_id=info1.category.id)
     scope2 = Scope(name="it.needs.by.test.user.get.second", category_id=info1.category.id)
@@ -44,7 +45,7 @@ def test_get_no_all_scopes(client, dbsession, source, random_string, info_no_sco
     dbsession.commit()
 
 
-def test_get_a_few(client, dbsession, category_no_scopes, source, random_string):
+def test_get_a_few(client, dbsession, category_no_scopes, source):
     source = source()
     category1 = category_no_scopes()
     category2 = category_no_scopes()
@@ -87,7 +88,7 @@ def test_get_a_few(client, dbsession, category_no_scopes, source, random_string)
     dbsession.commit()
 
 
-def test_get_a_few(client, dbsession, category_no_scopes, source, random_string):
+def test_get_a_few(client, dbsession, category_no_scopes, source):
     source1 = source()
     source2 = source()
     category1 = category_no_scopes()
@@ -152,7 +153,7 @@ def test_get_a_few(client, dbsession, category_no_scopes, source, random_string)
     dbsession.commit()
 
 
-def test_get_last_most_trusted(client, dbsession, category_no_scopes, source, random_string):
+def test_get_last_most_trusted(client, dbsession, category_no_scopes, source):
     source1 = source()
     source2 = source()
     category1 = category_no_scopes()

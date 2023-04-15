@@ -10,7 +10,7 @@ thread_pool = ThreadPoolExecutor()
 
 
 async def aio_get_openapi(request: Request):
-    app = request.app
+    app: FastAPI = request.app
     loop = asyncio.get_event_loop()
     kwargs = dict(
         title=app.title,

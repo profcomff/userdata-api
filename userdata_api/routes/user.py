@@ -17,7 +17,7 @@ user = APIRouter(prefix="/user", tags=["User"])
 async def get_user_info(
     id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
 ):
-    if "userinfo.user.read" not in user["session_scopes"] and user["user_id"] != id:
+    if "userinfo.user.read" not in tuple(scope["name"] for scope in user["session_scopes"]) and user["user_id"] != id:
         raise HTTPException(status_code=403, detail="Forbidden")
     await user_interface.refresh(db.session)
     res = await get_user_info_func(db.session, id, user["session_scopes"])

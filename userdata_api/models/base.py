@@ -5,7 +5,7 @@ import re
 from sqlalchemy import Integer, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.orm import Mapped, Session, mapped_column, Query
 
 from userdata_api.exceptions import ObjectNotFound
 
@@ -42,7 +42,7 @@ class BaseDbModel(Base):
 
     @classmethod
     def query(cls, *, with_deleted: bool = False, session: Session) -> Query:
-        """Get all objects with soft deletes"""
+        """Создает запрос с софт делитами, возвращает Query"""
         objs = session.query(cls)
         if not with_deleted and hasattr(cls, "is_deleted"):
             objs = objs.filter(not_(cls.is_deleted))

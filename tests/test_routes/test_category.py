@@ -2,9 +2,10 @@ import datetime
 
 from userdata_api.models.db import *
 from userdata_api.schemas.category import CategoryGet
+from userdata_api.utils.utils import random_string
 
 
-def test_create_with_scopes(client, dbsession, random_string):
+def test_create_with_scopes(client, dbsession):
     name = f"test{random_string()}"
     name2 = f"test.{random_string()}"
     name3 = f"test.{random_string()}.test"
