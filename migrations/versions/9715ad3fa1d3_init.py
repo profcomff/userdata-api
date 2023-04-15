@@ -79,7 +79,6 @@ def upgrade():
     )
 
 
-
 def downgrade():
     op.drop_table('info')
     op.drop_table('scope')

@@ -5,7 +5,7 @@ import re
 from sqlalchemy import Integer, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
-from sqlalchemy.orm import Mapped, Session, mapped_column, Query
+from sqlalchemy.orm import Mapped, Query, Session, mapped_column
 
 from userdata_api.exceptions import ObjectNotFound
 

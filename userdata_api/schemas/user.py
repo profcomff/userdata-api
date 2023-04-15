@@ -42,7 +42,6 @@ class UserInterface:
 user_interface = UserInterface()
 
 
-
 T = TypeVar("T")
 P = ParamSpec("P")
 
@@ -51,6 +50,7 @@ def refreshing(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
     """
     Декоратор для обертки функций обновляющих модель ответа `GET /user/{user_id}`
     """
+
     @wraps(fn)
     async def decorated(request: Request, *args: P.args, **kwargs: P.kwargs) -> T:
         app: FastAPI = request.app

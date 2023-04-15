@@ -5,8 +5,8 @@ import sqlalchemy.exc
 
 from userdata_api.exceptions import ObjectNotFound
 from userdata_api.models.db import *
-from userdata_api.utils.utils import random_string
 from userdata_api.schemas.param import ParamGet
+from userdata_api.utils.utils import random_string
 
 
 def test_create_with_scopes(client, dbsession, category):
