@@ -1,5 +1,12 @@
+from functools import wraps
+from typing import Awaitable, Callable, TypeVar
+
+from fastapi import FastAPI
+from fastapi_sqlalchemy import db
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.collections import InstrumentedList
+from starlette.requests import Request
+from typing_extensions import ParamSpec
 
 from userdata_api.models.db import Info, Param, Source, Type
 from userdata_api.schemas.user import user_interface
@@ -41,3 +48,24 @@ async def get_user_info(session: Session, user_id: int, scopes: list[dict[str, s
             )
             result[param.category.name][param.name] = q.value
     return result
+
+
+T = TypeVar("T")
+P = ParamSpec("P")
+
+
+def refreshing(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
+    """
+    Декоратор для обертки функций обновляющих модель ответа `GET /user/{user_id}`
+    Первым аргументом ручки должен быть request.
+    """
+
+    @wraps(fn)
+    async def decorated(request: Request, *args: P.args, **kwargs: P.kwargs) -> T:
+        app: FastAPI = request.app
+        _res = await fn(request, *args, **kwargs)
+        await user_interface.refresh(db.session)
+        app.openapi_schema = None
+        return _res
+
+    return decorated

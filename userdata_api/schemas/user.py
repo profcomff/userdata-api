@@ -1,9 +1,6 @@
 from copy import deepcopy
-from functools import wraps
-from typing import Awaitable, Callable, ParamSpec, TypeVar
+from typing import ParamSpec, TypeVar
 
-from fastapi import FastAPI, Request
-from fastapi_sqlalchemy import db
 from pydantic import create_model
 from sqlalchemy.orm import Session
 
@@ -40,24 +37,3 @@ class UserInterface:
 
 
 user_interface = UserInterface()
-
-
-T = TypeVar("T")
-P = ParamSpec("P")
-
-
-def refreshing(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
-    """
-    Декоратор для обертки функций обновляющих модель ответа `GET /user/{user_id}`
-    Первым аргументом ручки должен быть request.
-    """
-
-    @wraps(fn)
-    async def decorated(request: Request, *args: P.args, **kwargs: P.kwargs) -> T:
-        app: FastAPI = request.app
-        _res = await fn(request, *args, **kwargs)
-        await user_interface.refresh(db.session)
-        app.openapi_schema = None
-        return _res
-
-    return decorated

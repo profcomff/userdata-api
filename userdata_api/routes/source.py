@@ -8,7 +8,7 @@ from pydantic import parse_obj_as
 from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Source
 from userdata_api.schemas.source import SourceGet, SourcePatch, SourcePost
-from userdata_api.schemas.user import refreshing
+from userdata_api.utils.user import refreshing
 
 
 source = APIRouter(prefix="/source", tags=["Source"])
