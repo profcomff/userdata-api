@@ -49,6 +49,7 @@ P = ParamSpec("P")
 def refreshing(fn: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
     """
     Декоратор для обертки функций обновляющих модель ответа `GET /user/{user_id}`
+    Первым аргументом ручки должен быть request.
     """
 
     @wraps(fn)
