@@ -4,7 +4,6 @@ from typing import Awaitable, Callable, TypeVar
 from fastapi import FastAPI
 from fastapi_sqlalchemy import db
 from sqlalchemy.orm import Session
-from sqlalchemy.orm.collections import InstrumentedList
 from starlette.requests import Request
 from typing_extensions import ParamSpec
 

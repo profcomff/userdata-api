@@ -16,7 +16,10 @@ info = APIRouter(prefix="/info", tags=["Info"])
 async def create_info(
     info_inp: InfoPost, user: dict[str, str] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
 ) -> InfoGet:
-    if "userinfo.info.create" not in user["session_scopes"] and user["user_id"] != info_inp.owner_id:
+    if (
+        "userinfo.info.create" not in [scope["name"] for scope in user["session_scopes"]]
+        and user["user_id"] != info_inp.owner_id
+    ):
         raise HTTPException(status_code=403, detail="Forbidden")
     Source.get(info_inp.source_id, session=db.session)
     Param.get(info_inp.param_id, session=db.session)
@@ -28,7 +31,10 @@ async def get_info(
     id: int, user: dict[str, str] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
 ) -> InfoGet:
     info = Info.get(id, session=db.session)
-    if "userinfo.info.read" not in user["session_scopes"] and user["user_id"] != info.owner_id:
+    if (
+        "userinfo.info.read" not in [scope["name"] for scope in user["session_scopes"]]
+        and user["user_id"] != info.owner_id
+    ):
         raise HTTPException(status_code=403, detail="Forbidden")
     return InfoGet.from_orm(info)
 
@@ -51,7 +57,10 @@ async def patch_info(
     if info_inp.source_id:
         Source.get(info_inp.source_id, session=db.session)
     info = Info.get(id, session=db.session)
-    if "userinfo.info.update" not in user["session_scopes"] and user["user_id"] != info.owner_id:
+    if (
+        "userinfo.info.update" not in [scope["name"] for scope in user["session_scopes"]]
+        and user["user_id"] != info.owner_id
+    ):
         raise HTTPException(status_code=403, detail="Forbidden")
     return InfoGet.from_orm(Info.update(id, session=db.session, **info_inp.dict(exclude_unset=True)))
 
@@ -61,6 +70,9 @@ async def delete_info(
     id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
 ) -> None:
     info = Info.get(id, session=db.session)
-    if "userinfo.info.delete" not in user["session_scopes"] and user["user_id"] != info.owner_id:
+    if (
+        "userinfo.info.delete" not in [scope["name"] for scope in user["session_scopes"]]
+        and user["user_id"] != info.owner_id
+    ):
         raise HTTPException(status_code=403, detail="Forbidden")
     Info.delete(id, session=db.session)

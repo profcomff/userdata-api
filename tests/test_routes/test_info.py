@@ -1,7 +1,4 @@
-import datetime
-
 import pytest
-import sqlalchemy.exc
 
 from userdata_api.exceptions import ObjectNotFound
 from userdata_api.models.db import *
@@ -9,11 +6,14 @@ from userdata_api.schemas.info import InfoGet
 from userdata_api.utils.utils import random_string
 
 
-def test_create(client, dbsession, param, source):
+@pytest.mark.authenticated("userdata.info.create")
+def test_create(_client, dbsession, param, source):
     _param = param()
     _source = source()
     name = f"test{random_string()}"
-    response = client.post("/info", json={"owner_id": 0, "source_id": _source.id, "param_id": _param.id, "value": name})
+    response = _client.post(
+        "/info", json={"owner_id": 0, "source_id": _source.id, "param_id": _param.id, "value": name}
+    )
     assert response.status_code == 200
     assert response.json()["value"] == name
     assert response.json()["source_id"] == _source.id
@@ -28,9 +28,10 @@ def test_create(client, dbsession, param, source):
     dbsession.query(Info).filter(Info.id == response.json()["id"]).delete()
 
 
-def test_get(client, dbsession, info):
+@pytest.mark.authenticated("userdata.info.read")
+def test_get(_client, dbsession, info):
     _info = info()
-    response = client.get(f"/info/{_info.id}")
+    response = _client.get(f"/info/{_info.id}")
     assert response.status_code == 200
     assert response.json()["id"] == _info.id
     assert response.json()["owner_id"] == _info.owner_id
@@ -39,18 +40,20 @@ def test_get(client, dbsession, info):
     assert response.json()["value"] == _info.value
 
 
-def test_get_all(client, dbsession, info):
+@pytest.mark.authenticated("userdata.info.read")
+def test_get_all(_client, dbsession, info):
     info1 = info()
     info2 = info()
-    response = client.get("/info")
+    response = _client.get("/info")
     assert response.status_code == 200
     assert InfoGet.from_orm(info1).dict() in response.json()
     assert InfoGet.from_orm(info2).dict() in response.json()
 
 
-def test_update(client, dbsession, info):
+@pytest.mark.authenticated("userdata.info.read")
+def test_update(_client, dbsession, info):
     _info = info()
-    response = client.patch(f"/info/{_info.id}", json={"value": f"{_info.value}updated"})
+    response = _client.patch(f"/info/{_info.id}", json={"value": f"{_info.value}updated"})
     assert response.status_code == 200
     assert response.json()["value"] == f"{_info.value}updated"
     assert response.json()["param_id"] == _info.param_id
@@ -65,9 +68,10 @@ def test_update(client, dbsession, info):
     assert response.json()["owner_id"] == q.owner_id
 
 
-def test_delete(client, dbsession, info):
+@pytest.mark.authenticated("userdata.info.delete")
+def test_delete(_client, dbsession, info):
     _info = info()
-    response = client.delete(f"/info/{_info.id}")
+    response = _client.delete(f"/info/{_info.id}")
     assert response.status_code == 200
     with pytest.raises(ObjectNotFound):
         Info.get(_info.id, session=dbsession)
