@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
 
+from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Category, Scope
 from userdata_api.schemas.category import CategoryGet, CategoryPatch, CategoryPost
 from userdata_api.utils.user import refreshing
@@ -20,6 +21,8 @@ async def create_category(
     category_inp: CategoryPost,
     _: dict[str, str] = Depends(UnionAuth(scopes=["userinfo.category.create"], allow_none=False, auto_error=True)),
 ) -> CategoryGet:
+    if Category.query(session=db.session).filter(Category.name == category_inp.name).all():
+        raise AlreadyExists(Category, category_inp.name)
     scopes = []
     category = Category.create(session=db.session, name=category_inp.name)
     for scope in category_inp.scopes:
