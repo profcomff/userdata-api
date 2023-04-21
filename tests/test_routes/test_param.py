@@ -7,10 +7,10 @@ from userdata_api.utils.utils import random_string
 
 
 @pytest.mark.authenticated()
-def test_create_with_scopes(_client, dbsession, category):
+def test_create_with_scopes(client, dbsession, category):
     _category = category()
     name = f"test{random_string()}"
-    response = _client.post(
+    response = client.post(
         "/param",
         json={"name": name, "category_id": _category.id, "type": "last", "changeable": "true", "is_required": "true"},
     )
@@ -34,9 +34,9 @@ def test_create_with_scopes(_client, dbsession, category):
 
 
 @pytest.mark.authenticated()
-def test_get(_client, dbsession, param):
+def test_get(client, dbsession, param):
     _param = param()
-    response = _client.get(f"/param/{_param.id}")
+    response = client.get(f"/param/{_param.id}")
     assert response.status_code == 200
     assert response.json()["name"] == _param.name
     assert response.json()["type"] == "last"
@@ -46,19 +46,19 @@ def test_get(_client, dbsession, param):
 
 
 @pytest.mark.authenticated()
-def test_get_all(_client, dbsession, param):
+def test_get_all(client, dbsession, param):
     param1 = param()
     param2 = param()
-    response = _client.get("/param")
+    response = client.get("/param")
     assert response.status_code == 200
     assert ParamGet.from_orm(param1).dict() in response.json()
     assert ParamGet.from_orm(param2).dict() in response.json()
 
 
 @pytest.mark.authenticated()
-def test_update(_client, dbsession, param):
+def test_update(client, dbsession, param):
     _param = param()
-    response = _client.patch(f"/param/{_param.id}", json={"name": f"{_param.name}updated", "type": "all"})
+    response = client.patch(f"/param/{_param.id}", json={"name": f"{_param.name}updated", "type": "all"})
     assert response.status_code == 200
     assert response.json()["name"] == f"{_param.name}updated"
     assert response.json()["type"] == "all"
@@ -76,9 +76,9 @@ def test_update(_client, dbsession, param):
 
 
 @pytest.mark.authenticated()
-def test_delete(_client, dbsession, param):
+def test_delete(client, dbsession, param):
     _param = param()
-    response = _client.delete(f"/param/{_param.id}")
+    response = client.delete(f"/param/{_param.id}")
     assert response.status_code == 200
     with pytest.raises(ObjectNotFound):
         query1 = Param.get(_param.id, session=dbsession)

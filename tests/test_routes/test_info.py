@@ -7,11 +7,11 @@ from userdata_api.utils.utils import random_string
 
 
 @pytest.mark.authenticated()
-def test_create(_client, dbsession, param, source):
+def test_create(client, dbsession, param, source):
     _param = param()
     _source = source()
     name = f"test{random_string()}"
-    response = _client.post(
+    response = client.post(
         "/info", json={"owner_id": 0, "source_id": _source.id, "param_id": _param.id, "value": name}
     )
     assert response.status_code == 200
@@ -29,9 +29,9 @@ def test_create(_client, dbsession, param, source):
 
 
 @pytest.mark.authenticated()
-def test_get(_client, dbsession, info):
+def test_get(client, dbsession, info):
     _info = info()
-    response = _client.get(f"/info/{_info.id}")
+    response = client.get(f"/info/{_info.id}")
     assert response.status_code == 200
     assert response.json()["id"] == _info.id
     assert response.json()["owner_id"] == _info.owner_id
@@ -41,19 +41,19 @@ def test_get(_client, dbsession, info):
 
 
 @pytest.mark.authenticated()
-def test_get_all(_client, dbsession, info):
+def test_get_all(client, dbsession, info):
     info1 = info()
     info2 = info()
-    response = _client.get("/info")
+    response = client.get("/info")
     assert response.status_code == 200
     assert InfoGet.from_orm(info1).dict() in response.json()
     assert InfoGet.from_orm(info2).dict() in response.json()
 
 
 @pytest.mark.authenticated()
-def test_update(_client, dbsession, info):
+def test_update(client, dbsession, info):
     _info = info()
-    response = _client.patch(f"/info/{_info.id}", json={"value": f"{_info.value}updated"})
+    response = client.patch(f"/info/{_info.id}", json={"value": f"{_info.value}updated"})
     assert response.status_code == 200
     assert response.json()["value"] == f"{_info.value}updated"
     assert response.json()["param_id"] == _info.param_id
@@ -69,9 +69,9 @@ def test_update(_client, dbsession, info):
 
 
 @pytest.mark.authenticated()
-def test_delete(_client, dbsession, info):
+def test_delete(client, dbsession, info):
     _info = info()
-    response = _client.delete(f"/info/{_info.id}")
+    response = client.delete(f"/info/{_info.id}")
     assert response.status_code == 200
     with pytest.raises(ObjectNotFound):
         Info.get(_info.id, session=dbsession)

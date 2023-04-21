@@ -13,14 +13,14 @@ from userdata_api.utils.utils import random_string
 @pytest.mark.authenticated(
     "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third"
 )
-def test_get(_client, dbsession, source, info_no_scopes):
+def test_get(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()
     scope1 = Scope(name="it.needs.by.test.user.get.first", category_id=info1.category.id)
     scope2 = Scope(name="it.needs.by.test.user.get.second", category_id=info1.category.id)
     scope3 = Scope(name="it.needs.by.test.user.get.third", category_id=info1.category.id)
     dbsession.add_all([scope1, scope3, scope2])
     dbsession.commit()
-    response = _client.get(f"/user/{info1.owner_id}")
+    response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
     assert info1.category.name in response.json().keys()
     assert response.json()[info1.category.name] == {info1.param.name: info1.value}
@@ -33,7 +33,7 @@ def test_get(_client, dbsession, source, info_no_scopes):
 @pytest.mark.authenticated(
     "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third"
 )
-def test_get_no_all_scopes(_client, dbsession, source, info_no_scopes):
+def test_get_no_all_scopes(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()
     scope1 = Scope(name="it.needs.by.test.user.get.first", category_id=info1.category.id)
     scope2 = Scope(name="it.needs.by.test.user.get.second", category_id=info1.category.id)
@@ -41,7 +41,7 @@ def test_get_no_all_scopes(_client, dbsession, source, info_no_scopes):
     scope4 = Scope(name="it.needs.by.test.user.get.fourth", category_id=info1.category.id)
     dbsession.add_all([scope1, scope2, scope3, scope4])
     dbsession.commit()
-    response = _client.get(f"/user/{info1.owner_id}")
+    response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
     assert info1.category.name not in response.json()
     dbsession.delete(scope1)
@@ -95,7 +95,7 @@ def test_get_a_few(client, dbsession, category_no_scopes, source):
 
 
 @pytest.mark.authenticated()
-def test_get_a_few(_client, dbsession, category_no_scopes, source):
+def test_get_a_few(client, dbsession, category_no_scopes, source):
     source1 = source()
     source2 = source()
     category1 = category_no_scopes()
@@ -136,7 +136,7 @@ def test_get_a_few(_client, dbsession, category_no_scopes, source):
     info10 = Info(value=f"test{random_string()}", source_id=source1.id, param_id=param4.id, owner_id=0)
     dbsession.add_all([info7, info8, info9, info10])
     dbsession.commit()
-    response = _client.get(f"/user/{info1.owner_id}")
+    response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
     assert set(response.json()[category1.name][param1.name]) == {info2.value, info3.value, info1.value}
     assert set(response.json()[category1.name][param2.name]) == {info4.value}
@@ -161,7 +161,7 @@ def test_get_a_few(_client, dbsession, category_no_scopes, source):
 
 
 @pytest.mark.authenticated()
-def test_get_last_most_trusted(_client, dbsession, category_no_scopes, source):
+def test_get_last_most_trusted(client, dbsession, category_no_scopes, source):
     source1 = source()
     source2 = source()
     category1 = category_no_scopes()
@@ -181,7 +181,7 @@ def test_get_last_most_trusted(_client, dbsession, category_no_scopes, source):
     info4 = Info(value=f"test{random_string()}", source_id=source2.id, param_id=param1.id, owner_id=0)
     dbsession.add_all([info3, info4])
     dbsession.commit()
-    response = _client.get(f"/user/{info1.owner_id}")
+    response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
     assert category1.name in response.json().keys()
     assert response.json()[category1.name] == {param1.name: info4.value}

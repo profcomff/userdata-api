@@ -10,7 +10,7 @@ from userdata_api.utils.utils import random_string
 
 
 @pytest.fixture
-def _client(auth_mock):
+def client(auth_mock):
     yield TestClient(app)
 
 
