@@ -6,7 +6,7 @@ from userdata_api.models.db import *
 from userdata_api.utils.utils import random_string
 
 
-@pytest.mark.authenticated("userdata.category.create")
+@pytest.mark.authenticated()
 def test_create_with_scopes(_client, dbsession):
     name = f"test{random_string()}"
     name2 = f"test.{random_string()}"
@@ -23,7 +23,7 @@ def test_create_with_scopes(_client, dbsession):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.category.read")
+@pytest.mark.authenticated()
 def test_create_with_no_scopes(_client, dbsession):
     time = datetime.utcnow()
     response = _client.post("/category", json={"name": f"test{time}", "scopes": []})
@@ -35,7 +35,7 @@ def test_create_with_no_scopes(_client, dbsession):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.category.read")
+@pytest.mark.authenticated()
 def test_get(_client, dbsession, category):
     _category = category()
     response = _client.get(f"/category/{_category.id}")
@@ -45,7 +45,7 @@ def test_get(_client, dbsession, category):
     assert response.json()["name"] == _category.name
 
 
-@pytest.mark.authenticated("userdata.category.read")
+@pytest.mark.authenticated()
 def test_get_all(_client, dbsession, category):
     category1 = category()
     category2 = category()
@@ -63,7 +63,7 @@ def test_get_all(_client, dbsession, category):
     } in response.json()
 
 
-@pytest.mark.authenticated("userdata.category.update")
+@pytest.mark.authenticated()
 def test_update(_client, dbsession, category):
     _category = category()
     old_name = _category.name
@@ -84,7 +84,7 @@ def test_update(_client, dbsession, category):
     assert [scope.name for scope in _category.scopes] == scopes
 
 
-@pytest.mark.authenticated("userdata.category.delete")
+@pytest.mark.authenticated()
 def test_delete(_client, dbsession, category):
     _category = category()
     response = _client.delete(f"/category/{_category.id}")

@@ -6,7 +6,7 @@ from userdata_api.schemas.info import InfoGet
 from userdata_api.utils.utils import random_string
 
 
-@pytest.mark.authenticated("userdata.info.create")
+@pytest.mark.authenticated()
 def test_create(_client, dbsession, param, source):
     _param = param()
     _source = source()
@@ -28,7 +28,7 @@ def test_create(_client, dbsession, param, source):
     dbsession.query(Info).filter(Info.id == response.json()["id"]).delete()
 
 
-@pytest.mark.authenticated("userdata.info.read")
+@pytest.mark.authenticated()
 def test_get(_client, dbsession, info):
     _info = info()
     response = _client.get(f"/info/{_info.id}")
@@ -40,7 +40,7 @@ def test_get(_client, dbsession, info):
     assert response.json()["value"] == _info.value
 
 
-@pytest.mark.authenticated("userdata.info.read")
+@pytest.mark.authenticated()
 def test_get_all(_client, dbsession, info):
     info1 = info()
     info2 = info()
@@ -50,7 +50,7 @@ def test_get_all(_client, dbsession, info):
     assert InfoGet.from_orm(info2).dict() in response.json()
 
 
-@pytest.mark.authenticated("userdata.info.read")
+@pytest.mark.authenticated()
 def test_update(_client, dbsession, info):
     _info = info()
     response = _client.patch(f"/info/{_info.id}", json={"value": f"{_info.value}updated"})
@@ -68,7 +68,7 @@ def test_update(_client, dbsession, info):
     assert response.json()["owner_id"] == q.owner_id
 
 
-@pytest.mark.authenticated("userdata.info.delete")
+@pytest.mark.authenticated()
 def test_delete(_client, dbsession, info):
     _info = info()
     response = _client.delete(f"/info/{_info.id}")

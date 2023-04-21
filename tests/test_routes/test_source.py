@@ -6,7 +6,7 @@ from userdata_api.schemas.source import SourceGet
 from userdata_api.utils.utils import random_string
 
 
-@pytest.mark.authenticated("userdata.source.create")
+@pytest.mark.authenticated()
 def test_create(_client, dbsession):
     name = f"test{random_string()}"
     response = _client.post("/source", json={"name": name, "trust_level": 12})
@@ -20,7 +20,7 @@ def test_create(_client, dbsession):
     assert response.json()["id"] == q.id
 
 
-@pytest.mark.authenticated("userdata.source.read")
+@pytest.mark.authenticated()
 def test_get(_client, dbsession, source):
     _source = source()
     response = _client.get(f"/source/{_source.id}")
@@ -30,7 +30,7 @@ def test_get(_client, dbsession, source):
     assert response.json()["id"] == _source.id
 
 
-@pytest.mark.authenticated("userdata.source.read")
+@pytest.mark.authenticated()
 def test_get_all(_client, dbsession, source):
     source1 = source()
     source2 = source()
@@ -40,7 +40,7 @@ def test_get_all(_client, dbsession, source):
     assert SourceGet.from_orm(source2).dict() in response.json()
 
 
-@pytest.mark.authenticated("userdata.source.update")
+@pytest.mark.authenticated()
 def test_update(_client, dbsession, source):
     _source = source()
     response = _client.patch(f"/source/{_source.id}", json={"name": f"{_source.name}updated", "trust_level": 7})
@@ -55,7 +55,7 @@ def test_update(_client, dbsession, source):
     assert response.json()["id"] == q.id
 
 
-@pytest.mark.authenticated("userdata.source.delete")
+@pytest.mark.authenticated()
 def test_delete(_client, dbsession, source):
     _source = source()
     response = _client.delete(f"/source/{_source.id}")
