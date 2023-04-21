@@ -25,7 +25,12 @@ def dbsession():
 @pytest.fixture
 def category(dbsession):
     """
-    Вызов создает категорию с двумя рандомными скоупами и возвращщает ее
+    Вызов фабрики создает категорию с двумя рандомными скоупами и возвращщает ее
+    ```
+    def test(category):
+        category1 = category()
+        category2 = category()
+    ```
     """
     categories = []
     scopes = []
@@ -61,7 +66,12 @@ def category(dbsession):
 @pytest.fixture
 def param(dbsession, category):
     """
-    Вызов создает параметр в категории с двумя рандомными скоупами и возвращает его
+    Вызов фабрики создает параметр в категории с двумя рандомными скоупами и возвращает его
+    В рамках одного теста параметры создаются в разных категориях - для каждого параметра своя категория
+    def test(param):
+        param1 = param()
+        param2 = param()
+    ```
     """
     params = []
 
@@ -84,7 +94,11 @@ def param(dbsession, category):
 @pytest.fixture
 def source(dbsession):
     """
-    Вызов создает источник в и возвращает его
+    Вызов фабрики создает источник в и возвращает его
+    def test(source):
+        source1 = source()
+        source2 = source()
+    ```
     """
     sources = []
 
@@ -107,6 +121,11 @@ def source(dbsession):
 def info(dbsession, source, param):
     """
     Вызов создает информацмю в с параметром param() и источником source()
+    В рамках одного теста все сущности info создаются для одного источника и для одного парамтра
+     def test(info):
+        info1 = info()
+        info2 = info()
+    ```
     """
     infos = []
     _source = source()
@@ -132,7 +151,11 @@ def info(dbsession, source, param):
 @pytest.fixture
 def category_no_scopes(dbsession):
     """
-    Вызов создает категорию без скоупов и возвращает ее
+    Вызов фабрики создает категорию без скоупов и возвращает ее
+    def test(category_no_scopes):
+        category_no_scopes1 = category_no_scopes()
+        category_no_scopes2 = category_no_scopes()
+    ```
     """
     categories = []
 
@@ -155,7 +178,12 @@ def category_no_scopes(dbsession):
 @pytest.fixture
 def param_no_scopes(dbsession, category_no_scopes):
     """
-    Вызов создает параметр в категории без скоупов и возвращает его
+    Вызов фабрики создает параметр в категории без скоупов и возвращает его
+    Все созданные параметры в рамках одного теста принадлежат одной категории
+    def test(param_no_scopes):
+        param_no_scopes1 = param_no_scopes()
+        param_no_scopes2 = param_no_scopes()
+    ```
     """
     params = []
     _category = category_no_scopes()
@@ -179,7 +207,13 @@ def param_no_scopes(dbsession, category_no_scopes):
 @pytest.fixture
 def info_no_scopes(dbsession, source, param_no_scopes):
     """
-    Вызов создает информацию для параметра без скоупов и для источника source() и возвращает ее
+    Вызов фабрики создает информацию для параметра без скоупов и для источника source() и возвращает ее
+    Все сущности info принадлежат разным параметрам, которые принадлежат одной категории.
+    Источники для всех сущностей разные.
+    def test(info_no_scopes):
+        info_no_scopes1 = info_no_scopes()
+        info_no_scopes2 = info_no_scopes()
+    ```
     """
     infos = []
 
