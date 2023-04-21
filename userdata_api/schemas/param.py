@@ -7,7 +7,6 @@ from .base import Base
 
 class ParamPost(Base):
     name: constr(min_length=1)
-    category_id: int
     is_required: bool
     changeable: bool
     type: Type
@@ -23,3 +22,4 @@ class ParamPatch(Base):
 
 class ParamGet(ParamPost):
     id: int
+    category_id: int

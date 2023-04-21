@@ -11,9 +11,7 @@ def test_create(client, dbsession, param, source):
     _param = param()
     _source = source()
     name = f"test{random_string()}"
-    response = client.post(
-        "/info", json={"owner_id": 0, "source_id": _source.id, "param_id": _param.id, "value": name}
-    )
+    response = client.post("/info", json={"owner_id": 0, "source_id": _source.id, "param_id": _param.id, "value": name})
     assert response.status_code == 200
     assert response.json()["value"] == name
     assert response.json()["source_id"] == _source.id
