@@ -14,6 +14,11 @@ class UserInterface:
 
     @staticmethod
     async def __create_model(session: Session) -> type[Base]:
+        """
+        Создать модель ответа на `GET /user/{id}`
+        :param session: Соеденение с БД
+        :return: Пайдентик класс ответа на `GET /user/{id}`
+        """
         result = {}
         categories = Category.query(session=session).all()
         for category in categories:
@@ -28,6 +33,11 @@ class UserInterface:
         return create_model("User", __base__=Base, **result)
 
     async def refresh(self, session: Session):
+        """
+        Обновить модельку пользовательских данных
+        :param session: Соеденение с БД
+        :return: None
+        """
         _model: type[Base] = await UserInterface.__create_model(session)
         fields = _model.__fields__
         annotations = _model.__annotations__

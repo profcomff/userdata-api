@@ -56,11 +56,13 @@ async def patch_info(
         Param.get(info_inp.param_id, session=db.session)
     if info_inp.source_id:
         Source.get(info_inp.source_id, session=db.session)
-    info = Info.get(id, session=db.session)
+    info: Info = Info.get(id, session=db.session)
     if (
         "userinfo.info.update" not in [scope["name"] for scope in user["session_scopes"]]
         and user["user_id"] != info.owner_id
     ):
+        raise HTTPException(status_code=403, detail="Forbidden")
+    if "userinfo.info.update" not in [scope["name"] for scope in user["session_scopes"]] and not info.param.changeable:
         raise HTTPException(status_code=403, detail="Forbidden")
     return InfoGet.from_orm(Info.update(id, session=db.session, **info_inp.dict(exclude_unset=True)))
 

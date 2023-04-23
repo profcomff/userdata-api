@@ -1,8 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi.openapi.utils import get_openapi
 from fastapi_sqlalchemy import DBSessionMiddleware, db
 from pydantic import BaseModel
+from starlette.responses import HTMLResponse
 
 from userdata_api import __version__
 from userdata_api.schemas.user import user_interface
@@ -25,7 +27,7 @@ app = FastAPI(
     root_path=settings.ROOT_PATH if __version__ != 'dev' else '/',
     docs_url=None if __version__ != 'dev' else '/docs',
     redoc_url=None,
-    openapi_url="/openapi.json",
+    openapi_url=None,
 )
 
 
@@ -34,6 +36,24 @@ app.add_middleware(
     db_url=settings.DB_DSN,
     engine_args={"pool_pre_ping": True, "isolation_level": "AUTOCOMMIT"},
 )
+
+
+async def swagger_ui_html(req: Request) -> HTMLResponse:
+    root_path = req.scope.get("root_path", "").rstrip("/")
+    openapi_url = root_path + "/openapi.json"
+    oauth2_redirect_url = app.swagger_ui_oauth2_redirect_url
+    if oauth2_redirect_url:
+        oauth2_redirect_url = root_path + oauth2_redirect_url
+    return get_swagger_ui_html(
+        openapi_url=openapi_url,
+        title=app.title + " - Swagger UI",
+        oauth2_redirect_url=oauth2_redirect_url,
+        init_oauth=app.swagger_ui_init_oauth,
+        swagger_ui_parameters=app.swagger_ui_parameters,
+    )
+
+
+app.add_route(app.docs_url, swagger_ui_html, include_in_schema=False)
 
 
 @app.get("/openapi.json", include_in_schema=False)

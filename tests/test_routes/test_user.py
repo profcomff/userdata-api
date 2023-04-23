@@ -11,7 +11,7 @@ from userdata_api.utils.utils import random_string
 
 
 @pytest.mark.authenticated(
-    "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third"
+    "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third", user_id=0
 )
 def test_get(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()
@@ -31,7 +31,7 @@ def test_get(client, dbsession, source, info_no_scopes):
 
 
 @pytest.mark.authenticated(
-    "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third"
+    "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third", user_id=1
 )
 def test_get_no_all_scopes(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()

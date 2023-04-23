@@ -75,3 +75,23 @@ def test_delete(client, dbsession, info):
         Info.get(_info.id, session=dbsession)
     q = Info.get(_info.id, session=dbsession, with_deleted=True)
     assert q
+
+
+@pytest.mark.authenticated()
+def test_update_not_changeable(client, dbsession, info):
+    _info = info()
+    _info.param.changeable = False
+    dbsession.commit()
+    dbsession.expire_all()
+    response = client.patch(f"/info/{_info.id}", json={"value": f"{_info.value}updated"})
+    assert response.status_code == 403
+
+
+@pytest.mark.authenticated("userinfo.info.update")
+def test_update_changeable(client, dbsession, info):
+    _info = info()
+    _info.param.changeable = False
+    dbsession.commit()
+    dbsession.expire_all()
+    response = client.patch(f"/info/{_info.id}", json={"value": f"{_info.value}updated"})
+    assert response.status_code == 200

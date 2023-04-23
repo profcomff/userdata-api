@@ -21,6 +21,13 @@ async def create_source(
     source_inp: SourcePost,
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.create"], allow_none=False, auto_error=True)),
 ) -> SourceGet:
+    """
+    Создать источник данных
+    :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
+    :param source_inp: Моделька для создания
+    :param _: Аутентификация
+    :return: SourceGet - созданныый источник
+    """
     source = Source.query(session=db.session).filter(Source.name == source_inp.name).all()
     if source:
         raise AlreadyExists(Source, source_inp.name)
@@ -29,11 +36,20 @@ async def create_source(
 
 @source.get("/{id}", response_model=SourceGet)
 async def get_source(id: int) -> SourceGet:
+    """
+    Получить источник данных
+    :param id: Айди источника
+    :return: SourceGet - полученный источник
+    """
     return SourceGet.from_orm(Source.get(id, session=db.session))
 
 
 @source.get("", response_model=list[SourceGet])
 async def get_sources() -> list[SourceGet]:
+    """
+    Получить все источники данных
+    :return: list[SourceGet] - список источников данных
+    """
     return parse_obj_as(list[SourceGet], Source.query(session=db.session).all())
 
 
@@ -45,6 +61,14 @@ async def patch_source(
     source_inp: SourcePatch,
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.update"], allow_none=False, auto_error=True)),
 ) -> SourceGet:
+    """
+    Обновить источник данных
+    :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
+    :param id: Айди обновляемого источника
+    :param source_inp: Моделька для обновления
+    :param _: Аутентификация
+    :return: SourceGet - обновленный источник данных
+    """
     return SourceGet.from_orm(Source.update(id, session=db.session, **source_inp.dict(exclude_unset=True)))
 
 
@@ -55,4 +79,11 @@ async def delete_source(
     id: int,
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.delete"], allow_none=False, auto_error=True)),
 ) -> None:
+    """
+    Удалить источник данных
+    :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
+    :param id: Айди удаляемого источника
+    :param _: Аутентфиикация
+    :return: None
+    """
     Source.delete(id, session=db.session)

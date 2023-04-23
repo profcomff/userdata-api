@@ -14,7 +14,6 @@ class ParamPost(Base):
 
 class ParamPatch(Base):
     name: constr(min_length=1) | None
-    category_id: int | None
     is_required: bool | None
     changeable: bool | None
     type: Type | None

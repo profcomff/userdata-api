@@ -11,13 +11,23 @@ from userdata_api.models.db import Info, Param, Source, Type
 from userdata_api.schemas.user import user_interface
 
 
-async def get_user_info(session: Session, user_id: int, scopes: list[dict[str, str | int]]) -> dict:
+async def get_user_info(
+    session: Session, user_id: int, user: dict[str, int | list[dict[str, str | int]]]
+) -> dict[str, dict[str, str]]:
+    """
+    Получить пользоватеские данные, в зависимости от переданных скоупов.
+    :param user: Сессия запрашиваемого данные
+    :param session: Соеденение с БД
+    :param user_id: Айди овнера информации(пользователя)
+    :return: Словарь пользовательских данных, которым есть доступ у токена
+    """
     infos: list[Info] = Info.query(session=session).filter(Info.owner_id == user_id).all()
     param_dict: dict[Param, list[Info]] = {}
-    scope_names = [scope["name"] for scope in scopes]
+    scope_names = [scope["name"] for scope in user["session_scopes"]]
     for info in infos:
         info_scopes = [scope.name for scope in info.scopes]
-        if not all(scope in scope_names for scope in info_scopes):
+        ## Проверка доступов - нужен либо скоуп на категориию либо нуужно быть овнером информации
+        if not all(scope in scope_names for scope in info_scopes) and user_id != user["user_id"]:
             continue
         if info.param not in param_dict.keys():
             param_dict[info.param] = []
