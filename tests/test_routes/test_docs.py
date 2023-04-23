@@ -7,4 +7,4 @@ def test_openapi_json(dbsession, param, client):
 
     response = client.get("/openapi.json")
     assert response.status_code == 200
-    assert _param.category.name in str(response.text)
+    assert _param.category.name in response.text
