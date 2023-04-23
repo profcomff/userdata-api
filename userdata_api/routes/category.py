@@ -124,6 +124,6 @@ async def delete_category(
     """
     category: Category = Category.get(id, session=db.session)
     for scope in category.scopes:
-        db.session.delete(scope)
+        Scope.delete(scope.id, session=db.session)
     Category.delete(id, session=db.session)
     return None
