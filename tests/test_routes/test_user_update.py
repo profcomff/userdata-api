@@ -39,7 +39,9 @@ def test_main_scenario(dbsession, client, param, source):
                 ],
                 param3.name: [{"value": "fourth_updated", "source": source2.name}],
             },
-            param2.category.name: {param2.name: [{"value": "third_updated", "source": source1.name}],},
+            param2.category.name: {
+                param2.name: [{"value": "third_updated", "source": source1.name}],
+            },
         },
     )
     assert response.status_code == 200
