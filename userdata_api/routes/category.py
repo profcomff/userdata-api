@@ -1,12 +1,10 @@
-from typing import Any
-
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
 from pydantic import parse_obj_as
 
 from userdata_api.exceptions import AlreadyExists
-from userdata_api.models.db import Category, Scope
+from userdata_api.models.db import Category
 from userdata_api.schemas.category import CategoryGet, CategoryPatch, CategoryPost
 from userdata_api.utils.user import refreshing
 
@@ -31,11 +29,8 @@ async def create_category(
     """
     if Category.query(session=db.session).filter(Category.name == category_inp.name).all():
         raise AlreadyExists(Category, category_inp.name)
-    scopes = []
-    category = Category.create(session=db.session, name=category_inp.name)
-    for scope in category_inp.scopes:
-        scopes.append(Scope.create(name=scope, category_id=category.id, session=db.session).name)
-    return CategoryGet(id=category.id, name=category.name, scopes=scopes)
+    category = Category.create(session=db.session, **category_inp.dict())
+    return CategoryGet.from_orm(category)
 
 
 @category.get("/{id}", response_model=CategoryGet)
@@ -50,7 +45,7 @@ async def get_category(
     :return: Категорию со списком скоупов, которые нужны для получения пользовательских данных этой категории
     """
     category = Category.get(id, session=db.session)
-    return {"id": category.id, "name": category.name, "scopes": [_scope.name for _scope in category.scopes]}
+    return CategoryGet.from_orm(category)
 
 
 @category.get("", response_model=list[CategoryGet])
@@ -62,10 +57,7 @@ async def get_categories(
     :param _: Аутентифиуация
     :return: Список категорий. В каждой ноде списка - информация о скоупах, которые нужны для получения пользовательских данных этой категории
     """
-    result: list[dict[str, Any]] = []
-    for category in Category.query(session=db.session).all():
-        result.append({"id": category.id, "name": category.name, "scopes": [_scope.name for _scope in category.scopes]})
-    return parse_obj_as(list[CategoryGet], result)
+    return parse_obj_as(list[CategoryGet], Category.query(session=db.session).all())
 
 
 @category.patch("/{id}", response_model=CategoryGet)
@@ -85,27 +77,7 @@ async def patch_category(
     :return: CategoryGet - обновленную категорию
     """
     category: Category = Category.get(id, session=db.session)
-    category.name = category_inp.name or category.name
-    scopes = set(category_inp.scopes) if category_inp.scopes else set()
-    db_scopes = {_scope for _scope in category.scopes}
-    to_create: set[str] = set()
-    to_delete: set[Scope] = set()
-    for scope in db_scopes:
-        if scope.name not in scopes:
-            to_delete.add(scope)
-    for scope in scopes:
-        if scope not in {_scope.name for _scope in db_scopes}:
-            to_create.add(scope)
-    for scope in to_create:
-        Scope.create(name=scope, category_id=category.id, session=db.session)
-    for scope in to_delete:
-        db.session.delete(scope)
-    db.session.commit()
-    del category
-    category = Category.get(id, session=db.session)
-    return CategoryGet(
-        **{"name": category.name, "id": category.id, "scopes": [scope.name for scope in category.scopes]}
-    )
+    return CategoryGet.from_orm(Category.update(id, session=db.session, **category_inp.dict(exclude_unset=True)))
 
 
 @category.delete("/{id}")
@@ -122,8 +94,6 @@ async def delete_category(
     :param _: Аутентификация
     :return: None
     """
-    category: Category = Category.get(id, session=db.session)
-    for scope in category.scopes:
-        Scope.delete(scope.id, session=db.session)
+    _: Category = Category.get(id, session=db.session)
     Category.delete(id, session=db.session)
     return None

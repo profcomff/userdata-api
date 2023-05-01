@@ -8,12 +8,13 @@ from starlette.responses import Response
 
 from userdata_api.schemas.user import user_interface
 from userdata_api.utils.user import get_user_info as get_user_info_func
+from userdata_api.utils.user import process_post_model
 
 
-user = APIRouter(prefix="/user", tags=["User"])
+user = APIRouter(prefix="/user", tags=["UserGet"])
 
 
-@user.get("/{id}", response_model=user_interface.User)
+@user.get("/{id}", response_model=user_interface.UserGet)
 async def get_user_info(
     id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
 ):
@@ -32,5 +33,15 @@ async def get_user_info(
     """
     await user_interface.refresh(db.session)
     res = await get_user_info_func(db.session, id, user)
-    user_interface.User(**res)
+    return Response(content=json.dumps(res), media_type="application/json")
+
+
+@user.post("/{user_id}", response_model=user_interface.UserGet)
+async def update_user(
+    user_id: int,
+    update: user_interface.UserUpdate,
+    user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
+) -> user_interface.UserGet:
+    await process_post_model(user_id, update.dict(exclude_unset=True), user)
+    res = await get_user_info_func(db.session, user_id, user)
     return Response(content=json.dumps(res), media_type="application/json")

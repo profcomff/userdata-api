@@ -1,1 +1,4 @@
-from .db import BaseDbModel
+from . import db
+
+
+__all__ = ["db"]

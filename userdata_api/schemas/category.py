@@ -6,12 +6,14 @@ from .types.scope import Scope
 
 class CategoryPost(Base):
     name: constr(min_length=1)
-    scopes: list[Scope]
+    read_scope: Scope | None = None
+    update_scope: Scope | None = None
 
 
 class CategoryPatch(Base):
     name: constr(min_length=1) | None
-    scopes: list[Scope] | None
+    read_scope: Scope | None
+    update_scope: Scope | None
 
 
 class CategoryGet(CategoryPost):

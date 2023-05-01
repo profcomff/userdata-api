@@ -19,23 +19,11 @@ class Type(str, Enum):
     MOST_TRUSTED: Final[str] = "most_trusted"
 
 
-class Scope(BaseDbModel):
-    name: Mapped[str] = mapped_column(String)
-    category_id: Mapped[int] = mapped_column(Integer, ForeignKey("category.id"))
-
-    category: Mapped[Category] = relationship(
-        "Category",
-        foreign_keys="Scope.category_id",
-        back_populates="scopes",
-        primaryjoin="and_(Scope.category_id==Category.id, not_(Category.is_deleted))",
-    )
-
-
 class Category(BaseDbModel):
     name: Mapped[str] = mapped_column(String)
+    read_scope: Mapped[str] = mapped_column(String, nullable=True)
+    update_scope: Mapped[str] = mapped_column(String, nullable=True)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    scopes: Mapped[list[Scope]] = relationship("Scope", foreign_keys="Scope.category_id", back_populates="category")
 
     params: Mapped[list[Param]] = relationship(
         "Param",
@@ -66,10 +54,6 @@ class Param(BaseDbModel):
         back_populates="param",
         primaryjoin="and_(Param.id==Info.param_id, not_(Info.is_deleted))",
     )
-
-    @hybrid_property
-    def scopes(self) -> list[Scope]:
-        return self.category.scopes
 
     @property
     def pytype(self) -> type:
@@ -117,10 +101,6 @@ class Info(BaseDbModel):
         back_populates="infos",
         primaryjoin="and_(Info.source_id==Source.id, not_(Source.is_deleted))",
     )
-
-    @hybrid_property
-    def scopes(self) -> list[Scope]:
-        return self.param.category.scopes
 
     @hybrid_property
     def category(self) -> Category:

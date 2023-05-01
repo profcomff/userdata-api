@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-from sqlalchemy import Integer, not_
+from sqlalchemy import Integer, inspect, not_
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.declarative import as_declarative, declared_attr
 from sqlalchemy.orm import Mapped, Query, Session, mapped_column
@@ -76,3 +76,17 @@ class BaseDbModel(Base):
         else:
             session.delete(obj)
         session.flush()
+
+    def _col_names(self):
+        inst = inspect(self)
+        attr_names = [c_attr.key for c_attr in inst.mapper.column_attrs]
+        return attr_names
+
+    def dict(self: BaseDbModel):
+        res = {}
+        col_names = self._col_names()
+        for attr_name in dir(self):
+            if attr_name not in col_names:
+                continue
+            res[attr_name] = getattr(self, attr_name)
+        return res

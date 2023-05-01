@@ -19,8 +19,8 @@ class Scope(str):
 
     @classmethod
     def validate(cls, val: str) -> str:
-        if not val:
-            raise ValueError("None or empty string are not allowed")
+        if val == "":
+            raise ValueError("Empty string are not allowed")
         val = str(val).strip().lower()
         if val[0] == "." or val[-1] == ".":
             raise ValueError("Dot can not be leading or closing")

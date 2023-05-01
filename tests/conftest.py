@@ -33,30 +33,20 @@ def category(dbsession):
     ```
     """
     categories = []
-    scopes = []
 
     def _category():
         nonlocal categories
-        nonlocal scopes
         name = f"test{random_string()}"
-        __category = Category(name=name)
-        dbsession.add(__category)
-        dbsession.flush()
-        _scope1, _scope2 = Scope(name=f"testscope.{random_string()}", category_id=__category.id), Scope(
-            name=f"testscope.{random_string()}", category_id=__category.id
+        __category = Category(
+            name=name, read_scope=f"testscope.{random_string()}", update_scope=f"testscope.{random_string()}"
         )
-        dbsession.add_all([_scope1, _scope2])
+        dbsession.add(__category)
         dbsession.commit()
         categories.append(__category)
-        scopes.append(_scope1)
-        scopes.append(_scope2)
         return __category
 
     yield _category
     dbsession.expire_all()
-    for row in [category_.scopes for category_ in categories]:
-        for _row in row:
-            dbsession.delete(_row)
     dbsession.commit()
     for row in categories:
         dbsession.delete(row)
@@ -162,7 +152,7 @@ def category_no_scopes(dbsession):
     def _category_no_scopes():
         nonlocal categories
         name = f"test{random_string()}"
-        __category = Category(name=name)
+        __category = Category(name=name, read_scope=None, update_scope=None)
         dbsession.add(__category)
         dbsession.commit()
         categories.append(__category)

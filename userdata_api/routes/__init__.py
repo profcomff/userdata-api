@@ -1,2 +1,4 @@
-import userdata_api.routes.base
-import userdata_api.routes.exc_handlers
+from . import exc_handlers
+
+
+__all__ = ["exc_handlers"]

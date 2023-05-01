@@ -10,44 +10,26 @@ from userdata_api.schemas.source import SourceGet
 from userdata_api.utils.utils import random_string
 
 
-@pytest.mark.authenticated(
-    "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third", user_id=0
-)
+@pytest.mark.authenticated("test.scope", user_id=0)
 def test_get(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()
-    scope1 = Scope(name="it.needs.by.test.user.get.first", category_id=info1.category.id)
-    scope2 = Scope(name="it.needs.by.test.user.get.second", category_id=info1.category.id)
-    scope3 = Scope(name="it.needs.by.test.user.get.third", category_id=info1.category.id)
-    dbsession.add_all([scope1, scope3, scope2])
+    info1.category.read_scope = "test.scope"
     dbsession.commit()
     response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
     assert info1.category.name in response.json().keys()
     assert response.json()[info1.category.name] == {info1.param.name: info1.value}
-    dbsession.delete(scope1)
-    dbsession.delete(scope2)
-    dbsession.delete(scope3)
     dbsession.commit()
 
 
-@pytest.mark.authenticated(
-    "it.needs.by.test.user.get.first", "it.needs.by.test.user.get.second", "it.needs.by.test.user.get.third", user_id=1
-)
+@pytest.mark.authenticated(user_id=1)
 def test_get_no_all_scopes(client, dbsession, source, info_no_scopes):
     info1: Info = info_no_scopes()
-    scope1 = Scope(name="it.needs.by.test.user.get.first", category_id=info1.category.id)
-    scope2 = Scope(name="it.needs.by.test.user.get.second", category_id=info1.category.id)
-    scope3 = Scope(name="it.needs.by.test.user.get.third", category_id=info1.category.id)
-    scope4 = Scope(name="it.needs.by.test.user.get.fourth", category_id=info1.category.id)
-    dbsession.add_all([scope1, scope2, scope3, scope4])
+    info1.category.read_scope = "test.scope"
     dbsession.commit()
     response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
     assert info1.category.name not in response.json()
-    dbsession.delete(scope1)
-    dbsession.delete(scope2)
-    dbsession.delete(scope3)
-    dbsession.delete(scope4)
     dbsession.commit()
 
 
