@@ -107,7 +107,6 @@ def source(dbsession):
     dbsession.commit()
 
 
-
 @pytest.fixture
 def category_no_scopes(dbsession):
     """
