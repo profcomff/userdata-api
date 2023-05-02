@@ -107,36 +107,6 @@ def source(dbsession):
     dbsession.commit()
 
 
-@pytest.fixture
-def info(dbsession, source, param):
-    """
-    Вызов создает информацмю в с параметром param() и источником source()
-    В рамках одного теста все сущности info создаются для одного источника и для одного парамтра
-     def test(info):
-        info1 = info()
-        info2 = info()
-    ```
-    """
-    infos = []
-    _source = source()
-    _param = param()
-
-    def _info():
-        nonlocal infos
-        nonlocal _source
-        nonlocal _param
-        time_ = f"test{random_string()}"
-        __info = Info(value=f"test{time_}", source_id=_source.id, param_id=_param.id, owner_id=0)
-        dbsession.add(__info)
-        dbsession.commit()
-        infos.append(__info)
-        return __info
-
-    yield _info
-    for row in infos:
-        dbsession.delete(row)
-    dbsession.commit()
-
 
 @pytest.fixture
 def category_no_scopes(dbsession):

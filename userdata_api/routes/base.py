@@ -10,7 +10,6 @@ from userdata_api.settings import get_settings
 from userdata_api.utils.docs import aio_get_openapi
 
 from .category import category
-from .info import info
 from .param import param
 from .source import source
 from .user import user
@@ -77,6 +76,5 @@ app.add_middleware(
 
 app.include_router(source)
 app.include_router(category)
-app.include_router(info)
 app.include_router(param)
 app.include_router(user)
