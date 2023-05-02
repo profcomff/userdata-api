@@ -8,7 +8,7 @@ from pydantic import parse_obj_as
 from userdata_api.exceptions import AlreadyExists, ObjectNotFound
 from userdata_api.models.db import Category, Param
 from userdata_api.schemas.param import ParamGet, ParamPatch, ParamPost
-from userdata_api.utils.user import refreshing
+from userdata_api.utils.user_get import refreshing
 
 
 param = APIRouter(prefix="/category/{category_id}/param", tags=["Param"])

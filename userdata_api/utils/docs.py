@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request
 from fastapi.openapi.utils import get_openapi
 from fastapi_sqlalchemy import db
 
-from userdata_api.utils.user import user_interface
+from userdata_api.utils.user_get import user_interface
 
 
 thread_pool = ThreadPoolExecutor()

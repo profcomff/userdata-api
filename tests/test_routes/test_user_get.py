@@ -1,12 +1,8 @@
-import datetime
 from time import sleep
 
 import pytest
-import sqlalchemy.exc
 
-from userdata_api.exceptions import ObjectNotFound
 from userdata_api.models.db import *
-from userdata_api.schemas.source import SourceGet
 from userdata_api.utils.utils import random_string
 
 

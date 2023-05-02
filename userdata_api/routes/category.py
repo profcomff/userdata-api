@@ -6,7 +6,7 @@ from pydantic import parse_obj_as
 from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Category
 from userdata_api.schemas.category import CategoryGet, CategoryPatch, CategoryPost
-from userdata_api.utils.user import refreshing
+from userdata_api.utils.user_get import refreshing
 
 
 category = APIRouter(prefix="/category", tags=["Category"])

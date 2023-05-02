@@ -12,5 +12,5 @@ async def not_found_handler(req: starlette.requests.Request, exc: ObjectNotFound
 
 
 @app.exception_handler(Forbidden)
-async def not_found_handler(req: starlette.requests.Request, exc: Forbidden):
+async def forbidden_handler(req: starlette.requests.Request, exc: Forbidden):
     return JSONResponse(content=ResponseModel(status="Forbidden", message=f"{exc}").dict(), status_code=403)

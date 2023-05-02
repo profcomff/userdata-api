@@ -2,13 +2,13 @@ import json
 from typing import Any
 
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
 from starlette.responses import Response
 
 from userdata_api.schemas.user import user_interface
-from userdata_api.utils.user import get_user_info as get_user_info_func
-from userdata_api.utils.user import process_post_model
+from userdata_api.utils.user_get import get_user_info as get_user_info_func
+from userdata_api.utils.user_post import process_post_model
 
 
 user = APIRouter(prefix="/user", tags=["UserGet"])
@@ -38,10 +38,12 @@ async def get_user_info(
 
 @user.post("/{user_id}", response_model=user_interface.UserGet)
 async def update_user(
+    request: Request,
     user_id: int,
-    update: user_interface.UserUpdate,
+    _: user_interface.UserUpdate,
     user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> user_interface.UserGet:
-    await process_post_model(user_id, update.dict(exclude_unset=True), user)
+    js = await request.json()
+    await process_post_model(user_id, js, user)
     res = await get_user_info_func(db.session, user_id, user)
     return Response(content=json.dumps(res), media_type="application/json")
