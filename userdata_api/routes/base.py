@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi_sqlalchemy import DBSessionMiddleware, db
@@ -7,7 +7,7 @@ from starlette.responses import HTMLResponse
 from userdata_api import __version__
 from userdata_api.schemas.user import user_interface
 from userdata_api.settings import get_settings
-from userdata_api.utils.docs import aio_get_openapi
+from userdata_api.utils.docs import aio_get_openapi, aio_get_docs
 
 from .category import category
 from .param import param
@@ -35,26 +35,20 @@ app.add_middleware(
 )
 
 
-async def swagger_ui_html(req: Request) -> HTMLResponse:
-    root_path = req.scope.get("root_path", "").rstrip("/")
-    openapi_url = root_path + "/openapi.json"
-    oauth2_redirect_url = app.swagger_ui_oauth2_redirect_url
-    if oauth2_redirect_url:
-        oauth2_redirect_url = root_path + oauth2_redirect_url
-    return get_swagger_ui_html(
-        openapi_url=openapi_url,
-        title=app.title + " - Swagger UI",
-        oauth2_redirect_url=oauth2_redirect_url,
-        init_oauth=app.swagger_ui_init_oauth,
-        swagger_ui_parameters=app.swagger_ui_parameters,
-    )
+@app.get(app.docs_url, include_in_schema=False)
+async def swagger_ui_html(request: Request) -> HTMLResponse:
+    if __version__ != 'dev':
+        raise HTTPException(status_code=404)
+    return await aio_get_docs(request, openapi_path="/openapi.json")
 
-
-app.add_route(app.docs_url, swagger_ui_html, include_in_schema=False)
 
 
 @app.get("/openapi.json", include_in_schema=False)
 async def get_docs(request: Request):
+    """
+    Фетчит текущую версию документации.
+    Обновит при запросе модельки UserGet, UserPost
+    """
     app: FastAPI = request.app
     app.openapi_schema = None
     return await aio_get_openapi(request)
@@ -62,6 +56,10 @@ async def get_docs(request: Request):
 
 @app.on_event("startup")
 async def create_models():
+    """
+    Создает модельки UserGet, UserPost при стартапе приложения
+    :return:
+    """
     with db():
         await user_interface.refresh(db.session)
 

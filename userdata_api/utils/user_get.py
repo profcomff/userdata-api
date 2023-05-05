@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from starlette.requests import Request
 from typing_extensions import ParamSpec
 
-from userdata_api.models.db import Info, Param, Source, Type
+from userdata_api.models.db import Info, Param, Source, ViewType
 from userdata_api.schemas.user import user_interface
 
 
@@ -35,9 +35,9 @@ async def get_user_info(
     for param, v in param_dict.items():
         if param.category.name not in result.keys():
             result[param.category.name] = {}
-        if param.type == Type.ALL:
+        if param.type == ViewType.ALL:
             result[param.category.name][param.name] = [_v.value for _v in v]
-        elif param.type == Type.LAST:
+        elif param.type == ViewType.LAST:
             q: Info = (
                 Info.query(session=session)
                 .filter(Info.owner_id == user_id, Info.param_id == param.id)
@@ -45,7 +45,7 @@ async def get_user_info(
                 .first()
             )
             result[param.category.name][param.name] = q.value
-        elif param.type == Type.MOST_TRUSTED:
+        elif param.type == ViewType.MOST_TRUSTED:
             q: Info = (
                 Info.query(session=session)
                 .join(Source)

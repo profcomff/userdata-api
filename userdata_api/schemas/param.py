@@ -1,6 +1,6 @@
 from pydantic import constr
 
-from userdata_api.models.db import Type
+from userdata_api.models.db import ViewType
 
 from .base import Base
 
@@ -9,14 +9,14 @@ class ParamPost(Base):
     name: constr(min_length=1)
     is_required: bool
     changeable: bool
-    type: Type
+    type: ViewType
 
 
 class ParamPatch(Base):
     name: constr(min_length=1) | None
     is_required: bool | None
     changeable: bool | None
-    type: Type | None
+    type: ViewType | None
 
 
 class ParamGet(ParamPost):

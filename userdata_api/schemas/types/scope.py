@@ -3,7 +3,6 @@ from typing import Any, Generator
 
 from pydantic.validators import AnyCallable, str_validator
 
-
 CallableGenerator = Generator[AnyCallable, None, None]
 
 
@@ -27,5 +26,3 @@ class Scope(str):
         if len(set(val) - set(string.ascii_lowercase + "._")) > 0:
             raise ValueError("Only letters, dot and underscore allowed")
         return val
-
-    __weakref__ = property(lambda self: object(), lambda self, v: None, lambda self: None)

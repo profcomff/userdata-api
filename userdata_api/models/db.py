@@ -13,7 +13,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from userdata_api.models.base import BaseDbModel
 
 
-class Type(str, Enum):
+class ViewType(str, Enum):
     ALL: Final[str] = "all"
     LAST: Final[str] = "last"
     MOST_TRUSTED: Final[str] = "most_trusted"
@@ -23,6 +23,8 @@ class Category(BaseDbModel):
     name: Mapped[str] = mapped_column(String)
     read_scope: Mapped[str] = mapped_column(String, nullable=True)
     update_scope: Mapped[str] = mapped_column(String, nullable=True)
+    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
     params: Mapped[list[Param]] = relationship(
@@ -38,7 +40,9 @@ class Param(BaseDbModel):
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey(Category.id))
     is_required: Mapped[bool] = mapped_column(Boolean, default=False)
     changeable: Mapped[bool] = mapped_column(Boolean, default=True)
-    type: Mapped[Type] = mapped_column(DbEnum(Type, native_enum=False), nullable=True)
+    type: Mapped[ViewType] = mapped_column(DbEnum(ViewType, native_enum=False))
+    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
     category: Mapped[Category] = relationship(
@@ -48,7 +52,7 @@ class Param(BaseDbModel):
         primaryjoin="and_(Param.category_id==Category.id, not_(Category.is_deleted))",
     )
 
-    infos: Mapped[Info] = relationship(
+    values: Mapped[Info] = relationship(
         "Info",
         foreign_keys="Info.param_id",
         back_populates="param",
@@ -56,22 +60,18 @@ class Param(BaseDbModel):
     )
 
     @property
-    def pytype(self) -> type:
-        match self.type:
-            case Type.LAST:
-                return str
-            case Type.MOST_TRUSTED:
-                return str
-            case Type.ALL:
-                return list[str]
+    def pytype(self) -> type[str | list[str]]:
+        return list[str] if self.type == ViewType.ALL else str
 
 
 class Source(BaseDbModel):
     name: Mapped[str] = mapped_column(String)
     trust_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
 
-    infos: Mapped[Info] = relationship(
+    values: Mapped[Info] = relationship(
         "Info",
         foreign_keys="Info.source_id",
         back_populates="source",
@@ -91,14 +91,14 @@ class Info(BaseDbModel):
     param: Mapped[Param] = relationship(
         "Param",
         foreign_keys="Info.param_id",
-        back_populates="infos",
+        back_populates="values",
         primaryjoin="and_(Info.param_id==Param.id, not_(Param.is_deleted))",
     )
 
     source: Mapped[Source] = relationship(
         "Source",
         foreign_keys="Info.source_id",
-        back_populates="infos",
+        back_populates="values",
         primaryjoin="and_(Info.source_id==Source.id, not_(Source.is_deleted))",
     )
 
