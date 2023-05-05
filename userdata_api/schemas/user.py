@@ -14,6 +14,7 @@ class UserInterface:
     Класс, содержащий ссылки на модели для работы с ресурсами польщователей
     и методы для их ообновления при изменении категорий/параметров категорий в БД
     """
+
     UserGet: type[Base] = create_model("UserGet", __base__=Base)
     UserUpdate: type[Base] = create_model("UserUpdate", __base__=Base)
 

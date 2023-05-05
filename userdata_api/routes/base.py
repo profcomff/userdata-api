@@ -1,13 +1,12 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.openapi.docs import get_swagger_ui_html
 from fastapi_sqlalchemy import DBSessionMiddleware, db
 from starlette.responses import HTMLResponse
 
 from userdata_api import __version__
 from userdata_api.schemas.user import user_interface
 from userdata_api.settings import get_settings
-from userdata_api.utils.docs import aio_get_openapi, aio_get_docs
+from userdata_api.utils.docs import aio_get_docs, aio_get_openapi
 
 from .category import category
 from .param import param
@@ -40,7 +39,6 @@ async def swagger_ui_html(request: Request) -> HTMLResponse:
     if __version__ != 'dev':
         raise HTTPException(status_code=404)
     return await aio_get_docs(request, openapi_path="/openapi.json")
-
 
 
 @app.get("/openapi.json", include_in_schema=False)
