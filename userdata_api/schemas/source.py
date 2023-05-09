@@ -5,7 +5,7 @@ from .base import Base
 
 class SourcePost(Base):
     name: constr(min_length=1)
-    trust_level: conint(gt=1, lt=10)
+    trust_level: conint(gt=1, lt=11)
 
 
 class SourcePatch(Base):

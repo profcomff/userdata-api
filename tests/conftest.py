@@ -109,6 +109,16 @@ def source(dbsession):
     dbsession.commit()
 
 
+@pytest.fixture()
+def admin_source(dbsession):
+    _source = Source(name="admin", trust_level=10)
+    dbsession.add(_source)
+    dbsession.commit()
+    yield _source
+    dbsession.delete(_source)
+    dbsession.commit()
+
+
 @pytest.fixture
 def category_no_scopes(dbsession):
     """

@@ -32,6 +32,7 @@ class Category(BaseDbModel):
         foreign_keys="Param.category_id",
         back_populates="category",
         primaryjoin="and_(Category.id==Param.category_id, not_(Param.is_deleted))",
+        lazy="joined",
     )
 
 
@@ -50,13 +51,15 @@ class Param(BaseDbModel):
         foreign_keys="Param.category_id",
         back_populates="params",
         primaryjoin="and_(Param.category_id==Category.id, not_(Category.is_deleted))",
+        lazy="joined",
     )
 
-    values: Mapped[Info] = relationship(
+    values: Mapped[list[Info]] = relationship(
         "Info",
         foreign_keys="Info.param_id",
         back_populates="param",
         primaryjoin="and_(Param.id==Info.param_id, not_(Info.is_deleted))",
+        lazy="joined",
     )
 
     @property
@@ -65,7 +68,7 @@ class Param(BaseDbModel):
 
 
 class Source(BaseDbModel):
-    name: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String, unique=True)
     trust_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -76,6 +79,7 @@ class Source(BaseDbModel):
         foreign_keys="Info.source_id",
         back_populates="source",
         primaryjoin="and_(Source.id==Info.source_id, not_(Info.is_deleted))",
+        lazy="joined",
     )
 
 
@@ -93,6 +97,7 @@ class Info(BaseDbModel):
         foreign_keys="Info.param_id",
         back_populates="values",
         primaryjoin="and_(Info.param_id==Param.id, not_(Param.is_deleted))",
+        lazy="joined",
     )
 
     source: Mapped[Source] = relationship(
@@ -100,6 +105,7 @@ class Info(BaseDbModel):
         foreign_keys="Info.source_id",
         back_populates="values",
         primaryjoin="and_(Info.source_id==Source.id, not_(Source.is_deleted))",
+        lazy="joined",
     )
 
     @hybrid_property

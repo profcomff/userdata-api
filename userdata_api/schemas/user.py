@@ -27,16 +27,16 @@ class UserInterface:
         """
         result = {}
         categories = Category.query(session=session).all()
-        info_dict = {"value": (str, ...), "source": (str, ...)}
-        info_model: type[Base] = create_model("InfoModelUpdate", **info_dict)
         for category in categories:
-            category_dict = {}
+            if category.name not in result.keys():
+                result[category.name] = {}
             for param in category.params:
-                if param.category.name not in result.keys():
-                    result[param.category.name] = {}
-                category_dict[param.name] = (list[info_model], None)
-            _cat = create_model(f"{category.name}__update", __base__=Base, **category_dict)
-            result[category.name] = (_cat, None)
+                result[category.name] = result[category.name] | {param.name: (str, None)}
+            result[category.name] = (
+                create_model(f"{category.name}__update", __base__=Base, **result[category.name]),
+                None,
+            )
+        result["source"] = (str, ...)
         return create_model("UserUpdate", __base__=Base, **result)
 
     @staticmethod

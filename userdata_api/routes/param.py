@@ -20,7 +20,7 @@ async def create_param(
     request: Request,
     category_id: int,
     param_inp: ParamPost,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.param.create"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.create"], allow_none=False, auto_error=True)),
 ) -> ParamGet:
     """
     Создать поле внутри категории. Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}
@@ -67,7 +67,7 @@ async def patch_param(
     id: int,
     category_id: int,
     param_inp: ParamPatch,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.param.update"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.update"], allow_none=False, auto_error=True)),
 ) -> ParamGet:
     """
     Обновить параметр внутри категории
@@ -93,7 +93,7 @@ async def delete_param(
     request: Request,
     id: int,
     category_id: int,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.param.delete"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.delete"], allow_none=False, auto_error=True)),
 ) -> None:
     """
     Удалить параметр внутри категории

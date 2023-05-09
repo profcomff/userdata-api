@@ -6,7 +6,7 @@ from userdata_api.schemas.param import ParamGet
 from userdata_api.utils.utils import random_string
 
 
-@pytest.mark.authenticated()
+@pytest.mark.authenticated("userdata.param.create")
 def test_create_with_scopes(client, dbsession, category):
     _category = category()
     name = f"test{random_string()}"
@@ -56,7 +56,7 @@ def test_get_all(client, dbsession, param_no_scopes):
     assert ParamGet.from_orm(param2).dict() in response.json()
 
 
-@pytest.mark.authenticated()
+@pytest.mark.authenticated("userdata.param.update")
 def test_update(client, dbsession, param):
     _param = param()
     response = client.patch(
@@ -78,7 +78,7 @@ def test_update(client, dbsession, param):
     assert response.json()["category_id"] == q.category_id
 
 
-@pytest.mark.authenticated()
+@pytest.mark.authenticated("userdata.param.delete")
 def test_delete(client, dbsession, param):
     _param = param()
     response = client.delete(f"/category/{_param.category_id}/param/{_param.id}")

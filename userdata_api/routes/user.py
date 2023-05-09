@@ -43,6 +43,83 @@ async def update_user(
     _: user_interface.UserUpdate,
     user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> user_interface.UserGet:
+    """
+    Обновить информацию о пользователе.
+
+    Если не указать значение параметра, то ничего не обновится, но если указать,
+    то обновится полностью вся информация, конкретного параметра для этого польщователя.
+
+    Пример:
+
+    До обновления ответ на `GET /user/{id}` с полным списком прав был таким:
+
+    {
+      "category1": {
+        "param1": [
+          "old_value1",
+          "old_value2"
+        ],
+        "param2": [
+          "old_value3"
+        ]
+      },
+      "category2": {
+        "param3": "old_value4"
+      }
+    }
+
+    Запрос на обновление будет такой:
+
+    {
+      "category1": {
+        "param1": [
+          {
+            "value": "test_vk",
+            "source": "vk"
+          },
+          {
+            "value": "test_admin",
+            "source": "admin"
+          }
+        ]
+      },
+      "category3": {
+        "param4": [
+          {
+            "value": "test_new",
+            "source": "admin"
+          }
+        ]
+      }
+    }
+
+    В таком случае в категории category1 полностью обновится param1. В категории category1 param2 останется нетронутым.
+    Для юзера создастся запись с param4 из категории category3
+
+    После обновления ответ на `GET /user/{id}` с полным списком прав будет таким:
+
+    {
+      "category1": {
+        "param1": [
+          "test_vk",
+          "test_admin"
+        ],
+        "param2": [
+          "old_value3"
+        ]
+      },
+      "category2": {
+        "param3": "old_value4"
+      }
+    }
+
+
+    :param request:
+    :param user_id:
+    :param _:
+    :param user:
+    :return:
+    """
     js = await request.json()
     await process_post_model(user_id, js, user)
     res = await get_user_info_func(db.session, user_id, user)

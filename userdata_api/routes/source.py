@@ -19,7 +19,7 @@ source = APIRouter(prefix="/source", tags=["Source"])
 async def create_source(
     request: Request,
     source_inp: SourcePost,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.create"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.source.create"], allow_none=False, auto_error=True)),
 ) -> SourceGet:
     """
     Создать источник данных
@@ -59,7 +59,7 @@ async def patch_source(
     request: Request,
     id: int,
     source_inp: SourcePatch,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.update"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.source.update"], allow_none=False, auto_error=True)),
 ) -> SourceGet:
     """
     Обновить источник данных
@@ -77,7 +77,7 @@ async def patch_source(
 async def delete_source(
     request: Request,
     id: int,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userinfo.source.delete"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.source.delete"], allow_none=False, auto_error=True)),
 ) -> None:
     """
     Удалить источник данных

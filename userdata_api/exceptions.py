@@ -9,5 +9,5 @@ class AlreadyExists(Exception):
 
 
 class Forbidden(Exception):
-    def __init__(self, name: str, req_scope: str):
-        super().__init__(f"Category {name=}, requires {req_scope=}")
+    def __init__(self, msg: str):
+        super().__init__(msg)

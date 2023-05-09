@@ -17,7 +17,7 @@ category = APIRouter(prefix="/category", tags=["Category"])
 async def create_category(
     request: Request,
     category_inp: CategoryPost,
-    _: dict[str, str] = Depends(UnionAuth(scopes=["userinfo.category.create"], allow_none=False, auto_error=True)),
+    _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.create"], allow_none=False, auto_error=True)),
 ) -> CategoryGet:
     """
     Создать категорию пользовательских данных. Получить категорию можно будет со скоупами, имена которых в category_inp.scopes
@@ -36,7 +36,7 @@ async def create_category(
 @category.get("/{id}", response_model=CategoryGet)
 async def get_category(
     id: int,
-    _: dict[str, str] = Depends(UnionAuth(scopes=["userinfo.category.read"], allow_none=False, auto_error=True)),
+    _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.read"], allow_none=False, auto_error=True)),
 ) -> dict[str, str | int]:
     """
     Получить категорию
@@ -50,7 +50,7 @@ async def get_category(
 
 @category.get("", response_model=list[CategoryGet])
 async def get_categories(
-    _: dict[str, str] = Depends(UnionAuth(scopes=["userinfo.category.read"], allow_none=False, auto_error=True))
+    _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.read"], allow_none=False, auto_error=True))
 ) -> list[CategoryGet]:
     """
     Получить все категории
@@ -66,7 +66,7 @@ async def patch_category(
     request: Request,
     id: int,
     category_inp: CategoryPatch,
-    _: dict[str, str] = Depends(UnionAuth(scopes=["userinfo.category.update"], allow_none=False, auto_error=True)),
+    _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.update"], allow_none=False, auto_error=True)),
 ) -> CategoryGet:
     """
     Обновить категорию
@@ -85,7 +85,7 @@ async def patch_category(
 async def delete_category(
     request: Request,
     id: int,
-    _: dict[str, str] = Depends(UnionAuth(scopes=["userinfo.category.delete"], allow_none=False, auto_error=True)),
+    _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.delete"], allow_none=False, auto_error=True)),
 ) -> None:
     """
     Удалить категорию
