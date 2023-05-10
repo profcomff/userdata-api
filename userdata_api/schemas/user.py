@@ -51,11 +51,8 @@ class UserInterface:
         for category in categories:
             category_dict = {}
             for param in category.params:
-                if param.is_required:
-                    category_dict[param.name] = (param.pytype, ...)
-                else:
-                    category_dict[param.name] = (param.pytype, None)
-            model = create_model(f"{category.name}get", __base__=Base, **category_dict)
+                category_dict[param.name] = (param.pytype, ...)
+            model = create_model(f"{category.name}__get", __base__=Base, **category_dict)
             result[category.name] = (model, None)
         return create_model("UserGet", __base__=Base, **result)
 

@@ -288,3 +288,48 @@ def test_param_not_changeable_with_scope(dbsession, client, param, source):
     assert info1.value == "first_updated"
     dbsession.delete(info1)
     dbsession.commit()
+
+
+@pytest.mark.authenticated(user_id=1)
+def test_user_source_requires_information_own(dbsession, client, param, source):
+    param1 = param()
+    source = source()
+    source.name = "user"
+    param1.category.update_scope = "test.cat_update.first"
+    param1.changeable = False
+    info1_value = f"test{random_string()}"
+    info1 = Info(value=info1_value, source_id=source.id, param_id=param1.id, owner_id=0)
+    dbsession.add(info1)
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "user",
+            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 403
+    assert info1.value == info1_value
+    dbsession.delete(info1)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated(user_id=1)
+def test_not_available_sources(dbsession, client, param, source):
+    param1 = param()
+    source = source()
+    source.name = "user"
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "not_user",
+            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 403
+    dbsession.commit()
