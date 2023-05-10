@@ -38,7 +38,7 @@ jobs:
       - name: Pytest coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
-          pytest-coverage-path: pytest-coverage.txt
+          pytest-coverage-path: ./pytest-coverage.txt
           title: Coverage Report
           badge-title: Code Coverage
           hide-badge: false
@@ -48,7 +48,7 @@ jobs:
           report-only-changed-files: false
           remove-link-from-badge: false
           unique-id-for-comment: python3.11
-          junitxml-path: pytest.xml
+          junitxml-path: ./pytest.xml
           junitxml-title: Summary
   linting:
     runs-on: ubuntu-latest
