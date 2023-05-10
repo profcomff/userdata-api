@@ -32,7 +32,13 @@ class QueryData:
 
 
 async def __param(
-    user_id: int, category_name: str, query_data: QueryData, user: dict[str, int | list[dict[str, str | int]]], *, param_name: str, value: str | None
+    user_id: int,
+    category_name: str,
+    query_data: QueryData,
+    user: dict[str, int | list[dict[str, str | int]]],
+    *,
+    param_name: str,
+    value: str | None,
 ) -> None:
     """
     Низший уровень разбора запроса. Разбирает обновление параметра внутри категории
