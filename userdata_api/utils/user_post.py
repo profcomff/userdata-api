@@ -32,7 +32,7 @@ class QueryData:
 
 
 async def __param(
-    user_id: int, category_name: str, query_data: QueryData, *, param_name: str, value: str | None
+    user_id: int, category_name: str, query_data: QueryData, user: dict[str, int | list[dict[str, str | int]]], *, param_name: str, value: str | None
 ) -> None:
     """
     Низший уровень разбора запроса. Разбирает обновление параметра внутри категории
@@ -43,10 +43,13 @@ async def __param(
     :param value: Новое значение разбираемого параметра
     :return: None
     """
+    scope_names = tuple(scope["name"] for scope in user["session_scopes"])
     param: Param = query_data.param_map.get(category_name).get(param_name, None)
     if not param:
-        raise_exc(db.session, ObjectNotFound(Param, param_name))
+        rollback_and_raise_exc(db.session, ObjectNotFound(Param, param_name))
     info = query_data.info_map.get((param.id, query_data.source.id), None)
+    if not info and value is None:
+        return
     if not info:
         Info.create(
             session=db.session,
@@ -57,6 +60,10 @@ async def __param(
         )
         return
     if value is not None:
+        if not param.changeable and "userdata.info.update" not in scope_names:
+            rollback_and_raise_exc(
+                db.session, Forbidden(f"Param {param.name=} change requires 'userdata.info.update' scope")
+            )
         info.value = value
         return
     info.is_deleted = True
@@ -82,16 +89,11 @@ async def __category(
     :param user: Субъект запроса
     :return: None
     """
-    scope_names = tuple(scope["name"] for scope in user["session_scopes"])
     for k, v in category_dict.items():
         param = query_data.param_map.get(category_name).get(k, None)
         if not param:
-            db.session.rollback()
-            raise ObjectNotFound(Param, k)
-        if not param.changeable and "userdata.info.update" not in scope_names:
-            db.session.rollback()
-            raise Forbidden(f"Param {param.name=} change requires 'userdata.info.update' scope")
-        await __param(user_id, category_name, query_data, param_name=k, value=v)
+            rollback_and_raise_exc(db.session, ObjectNotFound(Param, k))
+        await __param(user_id, category_name, query_data, user, param_name=k, value=v)
 
 
 async def make_query(user_id: int, model: dict[str, dict[str, str] | int]) -> QueryData:
@@ -117,7 +119,7 @@ async def make_query(user_id: int, model: dict[str, dict[str, str] | int]) -> Qu
     return QueryData(category_map=category_map, param_map=param_map, source=source, info_map=info_map)
 
 
-def raise_exc(session: Session, exc: Exception) -> None:
+def rollback_and_raise_exc(session: Session, exc: Exception) -> None:
     """
     Откатить измненения в БД вызванные текущим разбором и кинуть ошибку
     :param session: Соединение с БДД
@@ -154,9 +156,11 @@ async def post_model(
             continue
         category = query_data.category_map.get(k, None)
         if not category:
-            raise_exc(session, ObjectNotFound(Category, k))
+            rollback_and_raise_exc(session, ObjectNotFound(Category, k))
         if category.update_scope not in scope_names and not (model["source"] == "user" and user["user_id"] == user_id):
-            raise_exc(session, Forbidden(f"Updating category {category.name=} requires {category.update_scope=} scope"))
+            rollback_and_raise_exc(
+                session, Forbidden(f"Updating category {category.name=} requires {category.update_scope=} scope")
+            )
         await __category(user_id, category.name, v, query_data, user)
 
 

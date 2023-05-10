@@ -238,3 +238,53 @@ def test_param_and_cat_not_found(dbsession, client, param, source):
     assert not info1.is_deleted
     dbsession.delete(info1)
     dbsession.commit()
+
+
+@pytest.mark.authenticated(user_id=0)
+def test_param_not_changeable_no_update_scope(dbsession, client, param, source):
+    param1 = param()
+    source = source()
+    source.name = "user"
+    param1.category.update_scope = "test.cat_update.first"
+    param1.changeable = False
+    info1 = Info(value=f"test{random_string()}", source_id=source.id, param_id=param1.id, owner_id=0)
+    dbsession.add(info1)
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "user",
+            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 403
+    assert not info1.is_deleted
+    dbsession.delete(info1)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated("userdata.info.update", user_id=0)
+def test_param_not_changeable_with_scope(dbsession, client, param, source):
+    param1 = param()
+    source = source()
+    source.name = "user"
+    param1.category.update_scope = "test.cat_update.first"
+    param1.changeable = False
+    info1 = Info(value=f"test{random_string()}", source_id=source.id, param_id=param1.id, owner_id=0)
+    dbsession.add(info1)
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "user",
+            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 200
+    assert info1.value == "first_updated"
+    dbsession.delete(info1)
+    dbsession.commit()
