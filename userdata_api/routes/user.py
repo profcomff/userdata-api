@@ -45,18 +45,20 @@ async def update_user(
 ) -> user_interface.UserGet:
     """
     Обновить информацию о пользователе.
+    Объект - пользователь, информацию которого обновляют
+    Субъект - пользователь, который обновляет - источник
 
     Если не указать параметр внутри категории, то ничего не обновится, если указать что-то,
     то либо создастся новая запись(в случае, если она отсутствовала у данного источника), либо отредактируется
-    старая. Если в значении параметра указан None, то соответствующая информациия удаляется
+    старая. Если в значении параметра указан None, то соответствующая информациия удаляется из данного источника
 
-    Обновлять через этуу ручку можно только из источников admin и user.
+    Обновлять через эту ручку можно только от имени источников admin и user.
 
     Чтобы обновить от имени админиа, надо иметь скоуп `userdata.info.admin`
     Чтобы обновить неизменяемую информацию надо обладать скоупом `userdata.info.update`
     Для обновления своей информации(источник `user`) не нужны скоупы на обновление соответствующих категорий
     Для обновления чужой информации от имени админа(источник  `admin`)
-    нужны скоупы на обновление всех указанных в теле запроса категорий данных
+    нужны скоупы на обновление всех указанных в теле запроса категорий пользовательских данных данных
 
 
     Пример:
@@ -66,67 +68,62 @@ async def update_user(
     {
       "category1": {
         "param1": [
-          "old_value1",
-          "old_value2"
+          "old_value1", ##admin source
+          "old_value2" ##vk source
         ],
         "param2": [
-          "old_value3"
+          "old_value3" ##vk source
         ]
       },
       "category2": {
-        "param3": "old_value4"
+        "param3": "old_value4", ##admin source
+        "param5": "old_value5" ##admin source
       }
     }
 
     Запрос на обновление будет такой:
 
     {
+      "source": "admin",
       "category1": {
-        "param1": [
-          {
-            "value": "test_vk",
-            "source": "vk"
-          },
-          {
-            "value": "test_admin",
-            "source": "admin"
-          }
-        ]
+        "param1": "upd1",
+        "param2": "upd2"
+      },
+      "category2": {
+        "param5": null,
       },
       "category3": {
-        "param4": [
-          {
-            "value": "test_new",
-            "source": "admin"
-          }
-        ]
+        "param4": "new",
       }
     }
 
-    В таком случае в категории category1 полностью обновится param1. В категории category1 param2 останется нетронутым.
-    Для юзера создастся запись с param4 из категории category3
+    В таком случае обновится
 
     После обновления ответ на `GET /user/{id}` с полным списком прав будет таким:
 
     {
       "category1": {
         "param1": [
-          "test_vk",
-          "test_admin"
+          "upd1", ##admin source
+          "old_value2" ##vk source
         ],
         "param2": [
-          "old_value3"
+          "old_value3" ##vk source
+          "upd2" ##admin source
         ]
       },
       "category2": {
-        "param3": "old_value4"
+        "param3": "old_value4", ##admin source
+      }
+      "category3":{
+        "param4": "new"
       }
     }
 
 
-    :param request:
-    :param user_id:
-    :param _:
+    :param request: Запрос из fastapi
+    :param user_id: Айди объекта обновленя
+    :param _: Модель запроса
     :param user:
     :return:
     """
