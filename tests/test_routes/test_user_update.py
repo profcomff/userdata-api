@@ -332,4 +332,6 @@ def test_not_available_sources(dbsession, client, param, source):
     )
     dbsession.expire_all()
     assert response.status_code == 403
-    dbsession.commit()
+
+
+
