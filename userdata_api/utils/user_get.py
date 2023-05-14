@@ -26,7 +26,7 @@ async def get_user_info(
     scope_names = [scope["name"] for scope in user["session_scopes"]]
     for info in infos:
         ## Проверка доступов - нужен либо скоуп на категориию либо нужно быть овнером информации
-        if info.category.read_scope and info.category.read_scope not in scope_names:
+        if info.category.read_scope and info.category.read_scope not in scope_names and user["user_id"] != user_id:
             continue
         if info.param not in param_dict.keys():
             param_dict[info.param] = []
