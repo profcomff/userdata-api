@@ -29,6 +29,7 @@ def test_get_no_all_scopes(client, dbsession, source, info_no_scopes):
     dbsession.commit()
 
 
+@pytest.mark.authenticated()
 def test_get_a_few(client, dbsession, category_no_scopes, source):
     source = source()
     category1 = category_no_scopes()
@@ -56,7 +57,7 @@ def test_get_a_few(client, dbsession, category_no_scopes, source):
     dbsession.commit()
     response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
-    assert response.json().keys() == [category1.name, category2.name, category3.name]
+    assert set(response.json().keys()) == {category1.name, category2.name, category3.name}
     assert response.json()[category1.name] == {info1.param.name: info1.value, info2.param.name: info2.value}
     assert response.json()[category2.name] == {info3.param.name: info3.value}
     assert response.json()[category3.name] == {info4.param.name: info4.value}
@@ -73,7 +74,7 @@ def test_get_a_few(client, dbsession, category_no_scopes, source):
 
 
 @pytest.mark.authenticated()
-def test_get_a_few(client, dbsession, category_no_scopes, source):
+def test_get_a_few_with_trust_level(client, dbsession, category_no_scopes, source):
     source1 = source()
     source2 = source()
     category1 = category_no_scopes()
