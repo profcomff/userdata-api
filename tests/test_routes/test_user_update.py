@@ -408,3 +408,24 @@ def test_delete(dbsession, client, param, admin_source):
     assert response.status_code == 200
     assert info1.is_deleted
     dbsession.delete(info1)
+
+
+@pytest.mark.authenticated("userdata.info.admin", user_id=1)
+def test_delete_forbidden_by_categoey_scope(dbsession, client, param, admin_source):
+    param = param()
+    info1 = Info(value="admin_info", source_id=admin_source.id, param_id=param.id, owner_id=0)
+    param.category.update_scope = "test.cat_update.first"
+    dbsession.add(info1)
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "admin",
+            f"{param.category.name}": {f"{param.name}": None},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 403
+    assert not info1.is_deleted
+    dbsession.delete(info1)

@@ -51,8 +51,6 @@ async def __param(
     """
     scope_names = tuple(scope["name"] for scope in user["session_scopes"])
     param: Param = query_data.param_map.get(category_name).get(param_name, None)
-    if not param:
-        rollback_and_raise_exc(db.session, ObjectNotFound(Param, param_name))
     info = query_data.info_map.get((param.id, query_data.source.id), None)
     if not info and value is None:
         return
