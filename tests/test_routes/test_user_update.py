@@ -355,3 +355,56 @@ def test_not_available_sources(dbsession, client, param, source):
     )
     dbsession.expire_all()
     assert response.status_code == 403
+
+
+@pytest.mark.authenticated("test.cat_update.first", "userdata.info.admin", user_id=1)
+def test_create_new(dbsession, client, param, source, admin_source):
+    param = param()
+    source = source()
+    source.name = "user"
+    param.category.update_scope = "test.cat_update.first"
+    info1 = Info(value="user_info", source_id=source.id, param_id=param.id, owner_id=0)
+    dbsession.add(info1)
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "admin",
+            f"{param.category.name}": {f"{param.name}": "admin_info"},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 200
+    info_new = (
+        dbsession.query(Info)
+        .filter(
+            Info.param_id == param.id, Info.owner_id == 0, Info.source_id == admin_source.id, Info.is_deleted == False
+        )
+        .one()
+    )
+    assert not info1.is_deleted
+    assert info_new.value == "admin_info"
+    dbsession.delete(info_new)
+    dbsession.delete(info1)
+
+
+@pytest.mark.authenticated("test.cat_update.first", "userdata.info.admin", user_id=1)
+def test_delete(dbsession, client, param, admin_source):
+    param = param()
+    info1 = Info(value="admin_info", source_id=admin_source.id, param_id=param.id, owner_id=0)
+    param.category.update_scope = "test.cat_update.first"
+    dbsession.add(info1)
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "admin",
+            f"{param.category.name}": {f"{param.name}": None},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 200
+    assert info1.is_deleted
+    dbsession.delete(info1)
