@@ -216,7 +216,7 @@ def test_param_and_cat_not_found(dbsession, client, param, admin_source):
 
 
 @pytest.mark.authenticated("test.cat_update.first", user_id=0)
-def test_param_and_cat_not_found(dbsession, client, param, source):
+def test_update_not_changeable(dbsession, client, param, source):
     param1 = param()
     source = source()
     source.name = "user"
@@ -230,6 +230,29 @@ def test_param_and_cat_not_found(dbsession, client, param, source):
         f"/user/0",
         json={
             "source": "user",
+            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 403
+    assert not info1.is_deleted
+    dbsession.delete(info1)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated("test.cat_update.first", user_id=0)
+def test_update_not_changeable_from_admin(dbsession, client, param, admin_source):
+    param1 = param()
+    param1.category.update_scope = "test.cat_update.first"
+    param1.changeable = False
+    info1 = Info(value=f"test{random_string()}", source_id=admin_source.id, param_id=param1.id, owner_id=0)
+    dbsession.add(info1)
+    dbsession.commit()
+    client.get("/user/0")
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "admin",
             f"{param1.category.name}": {f"{param1.name}": "first_updated"},
         },
     )
