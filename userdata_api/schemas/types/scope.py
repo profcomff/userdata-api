@@ -8,6 +8,14 @@ CallableGenerator = Generator[AnyCallable, None, None]
 
 
 class Scope(str):
+    """
+    Класс для валидации строки скоупа
+    Скоуп должен быть строкой
+    Скоуп должен быть не пустой строкой
+    Скоуп не может начинаться с точки или заканчиваться ей
+    Скоуп должен состоять только из букв, точек и подчеркиваний
+    """
+
     @classmethod
     def __modify_schema__(cls, field_schema: dict[str, Any]) -> None:
         field_schema.update(type='string', format='scope')
