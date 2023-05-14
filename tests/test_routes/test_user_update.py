@@ -411,7 +411,7 @@ def test_delete(dbsession, client, param, admin_source):
 
 
 @pytest.mark.authenticated("userdata.info.admin", user_id=1)
-def test_delete_forbidden_by_categoey_scope(dbsession, client, param, admin_source):
+def test_delete_forbidden_by_category_scope(dbsession, client, param, admin_source):
     param = param()
     info1 = Info(value="admin_info", source_id=admin_source.id, param_id=param.id, owner_id=0)
     param.category.update_scope = "test.cat_update.first"
