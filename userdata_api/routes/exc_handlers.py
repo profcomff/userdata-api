@@ -1,7 +1,7 @@
 import starlette
 from starlette.responses import JSONResponse
 
-from ..exceptions import Forbidden, ObjectNotFound, AlreadyExists
+from ..exceptions import AlreadyExists, Forbidden, ObjectNotFound
 from ..schemas.response_model import StatusResponseModel
 from .base import app
 
