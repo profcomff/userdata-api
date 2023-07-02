@@ -33,19 +33,20 @@ app.add_middleware(
     engine_args={"pool_pre_ping": True, "isolation_level": "AUTOCOMMIT"},
 )
 
+if __version__ == 'dev':
 
-@app.get(app.docs_url, include_in_schema=False)
-async def swagger_ui_html(request: Request) -> HTMLResponse:
-    """
-    Генериурет страничку сваггера, так как дефолтная отключена
+    @app.get(app.docs_url, include_in_schema=False)
+    async def swagger_ui_html(request: Request) -> HTMLResponse:
+        """
+        Генериурет страничку сваггера, так как дефолтная отключена
 
-    Работает только в разработческой среде, на проде возвращает 404
-    :param request: запрос из fastapi
-    :return: Swagger HTML page
-    """
-    if __version__ != 'dev':
-        raise HTTPException(status_code=404)
-    return await aio_get_docs(request, openapi_path="/openapi.json")
+        Работает только в разработческой среде, на проде возвращает 404
+        :param request: запрос из fastapi
+        :return: Swagger HTML page
+        """
+        if __version__ != 'dev':
+            raise HTTPException(status_code=404)
+        return await aio_get_docs(request, openapi_path="/openapi.json")
 
 
 @app.get("/openapi.json", include_in_schema=False)
