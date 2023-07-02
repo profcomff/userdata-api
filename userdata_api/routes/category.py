@@ -7,6 +7,7 @@ from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Category
 from userdata_api.schemas.category import CategoryGet, CategoryPatch, CategoryPost
 from userdata_api.utils.user_get import refreshing
+from userdata_api.schemas.response_model import StatusResponseModel
 
 
 category = APIRouter(prefix="/category", tags=["Category"])
@@ -80,13 +81,13 @@ async def patch_category(
     return CategoryGet.from_orm(Category.update(id, session=db.session, **category_inp.dict(exclude_unset=True)))
 
 
-@category.delete("/{id}")
+@category.delete("/{id}", response_model=StatusResponseModel)
 @refreshing
 async def delete_category(
     request: Request,
     id: int,
     _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.delete"], allow_none=False, auto_error=True)),
-) -> None:
+) -> StatusResponseModel:
     """
     Удалить категорию
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -96,4 +97,4 @@ async def delete_category(
     """
     _: Category = Category.get(id, session=db.session)
     Category.delete(id, session=db.session)
-    return None
+    return StatusResponseModel(status="Success", message="Category deleted")

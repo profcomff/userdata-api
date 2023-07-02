@@ -8,6 +8,7 @@ from pydantic import parse_obj_as
 from userdata_api.exceptions import AlreadyExists, ObjectNotFound
 from userdata_api.models.db import Category, Param
 from userdata_api.schemas.param import ParamGet, ParamPatch, ParamPost
+from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.utils.user_get import refreshing
 
 
@@ -87,14 +88,14 @@ async def patch_param(
     return ParamGet.from_orm(Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True)))
 
 
-@param.delete("/{id}")
+@param.delete("/{id}", response_model=StatusResponseModel)
 @refreshing
 async def delete_param(
     request: Request,
     id: int,
     category_id: int,
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.delete"], allow_none=False, auto_error=True)),
-) -> None:
+) -> StatusResponseModel:
     """
     Удалить параметр внутри категории
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -108,3 +109,4 @@ async def delete_param(
         raise ObjectNotFound(Param, id)
     res.is_deleted = True
     db.session.commit()
+    return StatusResponseModel(status="Success", message="Param deleted")

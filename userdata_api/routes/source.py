@@ -7,6 +7,7 @@ from pydantic import parse_obj_as
 
 from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Source
+from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.source import SourceGet, SourcePatch, SourcePost
 from userdata_api.utils.user_get import refreshing
 
@@ -26,7 +27,7 @@ async def create_source(
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param source_inp: Моделька для создания
     :param _: Аутентификация
-    :return: SourceGet - созданныый источник
+    :return: SourceGet - созданный источник
     """
     source = Source.query(session=db.session).filter(Source.name == source_inp.name).all()
     if source:
@@ -72,13 +73,13 @@ async def patch_source(
     return SourceGet.from_orm(Source.update(id, session=db.session, **source_inp.dict(exclude_unset=True)))
 
 
-@source.delete("/{id}")
+@source.delete("/{id}", response_model=StatusResponseModel)
 @refreshing
 async def delete_source(
     request: Request,
     id: int,
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.source.delete"], allow_none=False, auto_error=True)),
-) -> None:
+) -> StatusResponseModel:
     """
     Удалить источник данных
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -87,3 +88,4 @@ async def delete_source(
     :return: None
     """
     Source.delete(id, session=db.session)
+    return StatusResponseModel(status="Success", message="Source deleted")

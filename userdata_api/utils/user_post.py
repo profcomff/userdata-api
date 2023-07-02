@@ -110,14 +110,14 @@ async def make_query(user_id: int, model: dict[str, dict[str, str] | int]) -> Qu
     """
     param_map, category_map = {}, {}
     info_map = {}
-    info_filter = []
+    param_ids = []
     categories = Category.query(session=db.session).filter(Category.name.in_(model.keys())).all()
     for category in categories:
         category_map[category.name] = category
         param_map[category.name] = {param.name: param for param in category.params}
-        info_filter.extend([param.id for param in category.params])
+        param_ids.extend([param.id for param in category.params])
     source = Source.query(session=db.session).filter(Source.name == model["source"]).one_or_none()
-    infos = Info.query(session=db.session).filter(Info.param_id.in_(info_filter), Info.owner_id == user_id).all()
+    infos = Info.query(session=db.session).filter(Info.param_id.in_(param_ids), Info.owner_id == user_id).all()
     for info in infos:
         info_map[(info.param.id, info.source_id)] = info
     return QueryData(category_map=category_map, param_map=param_map, source=source, info_map=info_map)
