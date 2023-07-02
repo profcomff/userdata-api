@@ -1,0 +1,134 @@
+name: Build, publish and deploy docker
+
+on:
+  push:
+    branches: [ 'main' ]
+    tags:
+      - 'v*'
+
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push-image:
+    name: Build and push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=test,enable=true
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
+
+  deploy-testing:
+    name: Deploy Testing
+    needs: build-and-push-image
+    runs-on: [ self-hosted, Linux ]
+    environment:
+      name: Testing
+      url: https://api.test.profcomff.com/userdata
+    env:
+      CONTAINER_NAME: com_profcomff_api_userdata_test
+    permissions:
+      packages: read
+
+    steps:
+      - name: Pull new version
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
+
+      - name: Migrate DB
+        run: |
+          docker run \
+            --rm \
+            --network=web \
+            --env DB_DSN=${{ secrets.DB_DSN }} \
+            --name ${{ env.CONTAINER_NAME }}_migration \
+            --workdir="/" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test \
+            alembic upgrade head
+
+      - name: Run new version
+        id: run_prod
+        run: |
+          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
+          docker run \
+            --detach \
+            --restart always \
+            --network=web \
+            --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env ROOT_PATH='/userdata' \
+            --env GUNICORN_CMD_ARGS='--log-config logging_test.conf' \
+            --name ${{ env.CONTAINER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
+
+  deploy-production:
+    name: Deploy Production
+    needs: build-and-push-image
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: [ self-hosted, Linux ]
+    environment:
+      name: Production
+      url: https://api.profcomff.com/userdata
+    env:
+      CONTAINER_NAME: com_profcomff_api_userdata
+    permissions:
+      packages: read
+
+    steps:
+      - name: Pull new version
+        run: docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Migrate DB
+        run: |
+          docker run \
+            --rm \
+            --network=web \
+            --env DB_DSN=${{ secrets.DB_DSN }} \
+            --name ${{ env.CONTAINER_NAME }}_migration \
+            --workdir="/" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+            alembic upgrade head
+
+      - name: Run new version
+        id: run_test
+        run: |
+          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
+          docker run \
+            --detach \
+            --restart always \
+            --network=web \
+            --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env ROOT_PATH='/userdata' \
+            --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
+            --name ${{ env.CONTAINER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest

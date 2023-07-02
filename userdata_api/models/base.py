@@ -1,6 +1,12 @@
+from __future__ import annotations
+
 import re
 
-from sqlalchemy.ext.declarative import as_declarative, declared_attr
+from sqlalchemy import Integer, not_
+from sqlalchemy.exc import NoResultFound
+from sqlalchemy.orm import Mapped, Query, Session, as_declarative, declared_attr, mapped_column
+
+from userdata_api.exceptions import ObjectNotFound
 
 
 @as_declarative()
@@ -20,3 +26,64 @@ class Base:
         for c in self.__table__.columns:
             attrs.append(f"{c.name}={getattr(self, c.name)}")
         return "{}({})".format(self.__class__.__name__, ', '.join(attrs))
+
+
+class BaseDbModel(Base):
+    __abstract__ = True
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+
+    @classmethod
+    def create(cls, *, session: Session, **kwargs) -> BaseDbModel:
+        obj = cls(**kwargs)
+        session.add(obj)
+        session.flush()
+        return obj
+
+    @classmethod
+    def query(cls, *, with_deleted: bool = False, session: Session) -> Query:
+        """Создает запрос с софт делитами, возвращает Query"""
+        objs = session.query(cls)
+        if not with_deleted and hasattr(cls, "is_deleted"):
+            objs = objs.filter(not_(cls.is_deleted))
+        return objs
+
+    @classmethod
+    def get(cls, id: int, *, with_deleted=False, session: Session) -> BaseDbModel:
+        """Get object with soft deletes"""
+        objs = session.query(cls)
+        if not with_deleted and hasattr(cls, "is_deleted"):
+            objs = objs.filter(not_(cls.is_deleted))
+        try:
+            return objs.filter(cls.id == id).one()
+        except NoResultFound:
+            raise ObjectNotFound(cls, id)
+
+    @classmethod
+    def update(cls, id: int, *, session: Session, **kwargs) -> BaseDbModel:
+        obj = cls.get(id, session=session)
+        for k, v in kwargs.items():
+            setattr(obj, k, v)
+        session.flush()
+        return obj
+
+    @classmethod
+    def delete(cls, id: int, *, session: Session) -> None:
+        """Soft delete object if possible, else hard delete"""
+        obj = cls.get(id, session=session)
+        if hasattr(obj, "is_deleted"):
+            obj.is_deleted = True
+        else:
+            session.delete(obj)
+        session.flush()
+
+    @property
+    def _col_names(self):
+        return list(self.__table__.columns.keys())
+
+    def dict(self: BaseDbModel):
+        res = {}
+        for attr_name in dir(self):
+            if attr_name not in self._col_names:
+                continue
+            res[attr_name] = getattr(self, attr_name)
+        return res

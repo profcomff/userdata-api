@@ -12,6 +12,15 @@ format:
 	isort ./userdata_api
 	black ./userdata_api
 
+dev-format: format
+	autoflake -r --in-place --remove-all-unused-imports ./tests
+	isort ./tests
+	black ./tests
+	autoflake -r --in-place --remove-all-unused-imports ./migrations
+	isort ./migrations
+	black ./migrations
+
+
 db:
 	docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-userdata_api postgres:15
 
