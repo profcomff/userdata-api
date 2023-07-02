@@ -34,6 +34,7 @@ app.add_middleware(
 )
 
 if __version__ == 'dev':
+
     @app.get(app.docs_url, include_in_schema=False)
     async def swagger_ui_html(request: Request) -> HTMLResponse:
         """
