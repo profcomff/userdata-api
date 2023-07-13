@@ -9,8 +9,8 @@ class SourcePost(Base):
 
 
 class SourcePatch(Base):
-    name: constr(min_length=1) | None
-    trust_level: conint(gt=0, lt=11) | None
+    name: constr(min_length=1) | None = None
+    trust_level: conint(gt=0, lt=11) | None = None
 
 
 class SourceGet(SourcePost):

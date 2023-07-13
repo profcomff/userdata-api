@@ -19,7 +19,7 @@ def test_create_new(dbsession, client, param, source, admin_source):
         f"/user/0",
         json={
             "source": "admin",
-            f"{param.category.name}": {f"{param.name}": "admin_info"},
+            "items": [{"category": param.category.name, "param": param.name, "value": "admin_info"}],
         },
     )
     dbsession.expire_all()

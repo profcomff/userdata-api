@@ -9,14 +9,12 @@ from userdata_api.exceptions import AlreadyExists, ObjectNotFound
 from userdata_api.models.db import Category, Param
 from userdata_api.schemas.param import ParamGet, ParamPatch, ParamPost
 from userdata_api.schemas.response_model import StatusResponseModel
-from userdata_api.utils.user_get import refreshing
 
 
 param = APIRouter(prefix="/category/{category_id}/param", tags=["Param"])
 
 
 @param.post("", response_model=ParamGet)
-@refreshing
 async def create_param(
     request: Request,
     category_id: int,
@@ -62,7 +60,6 @@ async def get_params(category_id: int) -> list[ParamGet]:
 
 
 @param.patch("/{id}", response_model=ParamGet)
-@refreshing
 async def patch_param(
     request: Request,
     id: int,
@@ -89,7 +86,6 @@ async def patch_param(
 
 
 @param.delete("/{id}", response_model=StatusResponseModel)
-@refreshing
 async def delete_param(
     request: Request,
     id: int,

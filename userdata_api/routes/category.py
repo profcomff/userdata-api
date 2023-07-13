@@ -7,14 +7,12 @@ from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Category
 from userdata_api.schemas.category import CategoryGet, CategoryPatch, CategoryPost
 from userdata_api.schemas.response_model import StatusResponseModel
-from userdata_api.utils.user_get import refreshing
 
 
 category = APIRouter(prefix="/category", tags=["Category"])
 
 
 @category.post("", response_model=CategoryGet)
-@refreshing
 async def create_category(
     request: Request,
     category_inp: CategoryPost,
@@ -38,7 +36,7 @@ async def create_category(
 async def get_category(
     id: int,
     _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.read"], allow_none=False, auto_error=True)),
-) -> dict[str, str | int]:
+) -> CategoryGet:
     """
     Получить категорию
     :param id: Айди категории
@@ -46,7 +44,7 @@ async def get_category(
     :return: Категорию со списком скоупов, которые нужны для получения пользовательских данных этой категории
     """
     category = Category.get(id, session=db.session)
-    return CategoryGet.from_orm(category)
+    return CategoryGet.model_validate(category)
 
 
 @category.get("", response_model=list[CategoryGet])
@@ -62,7 +60,6 @@ async def get_categories(
 
 
 @category.patch("/{id}", response_model=CategoryGet)
-@refreshing
 async def patch_category(
     request: Request,
     id: int,
@@ -82,7 +79,6 @@ async def patch_category(
 
 
 @category.delete("/{id}", response_model=StatusResponseModel)
-@refreshing
 async def delete_category(
     request: Request,
     id: int,
