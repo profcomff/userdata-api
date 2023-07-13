@@ -41,28 +41,30 @@ async def patch_user_info(
             .filter(
                 Info.param_id == param.id, Info.owner_id == user_id, Source.name == new.source, not_(Info.is_deleted)
             )
-            .on_or_none()
+            .one_or_none()
         )
         if not info and item.value is None:
-            return await get_user_info(user_id, user)
+            continue
         if not info:
             Info.create(
                 session=db.session,
                 owner_id=user_id,
                 param_id=param.id,
-                source_id=db.session.query(Source).filter(Source.name == new.source).one_or_none(),
+                source_id=db.session.query(Source).filter(Source.name == new.source).one_or_none().id,
                 value=item.value,
             )
-            return await get_user_info(user_id, user)
+            continue
         if item.value is not None:
             if not param.changeable and "userdata.info.update" not in scope_names:
                 db.session.rollback()
                 raise Forbidden(f"Param {param.name=} change requires 'userdata.info.update' scope")
             info.value = item.value
-            return await get_user_info(user_id, user)
+            db.session.commit()
+            continue
         info.is_deleted = True
         db.session.flush()
-        return await get_user_info(user_id, user)
+        continue
+    return await get_user_info(user_id, user)
 
 
 async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:

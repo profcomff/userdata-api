@@ -27,7 +27,10 @@ def test_main_scenario(dbsession, client, param, admin_source):
         f"/user/0",
         json={
             "source": source1.name,
-            param1.category.name: {param1.name: "first_updated", param3.name: "second_updated"},
+            "items": [
+                {"category": param1.category.name, "param": param1.name, "value": "first_updated"},
+                {"category": param3.category.name, "param": param3.name, "value": "second_updated"},
+            ],
         },
     )
     assert response.status_code == 200
@@ -47,7 +50,13 @@ def test_main_scenario(dbsession, client, param, admin_source):
     )
     assert first.value == "first_updated"
     assert second.value == "second_updated"
-    response = client.post(f"/user/0", json={"source": source1.name, param2.category.name: {param2.name: None}})
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": source1.name,
+            "items": [{"category": param2.category.name, "param": param2.name, "value": None}],
+        },
+    )
     assert response.status_code == 200
     dbsession.expire_all()
     assert info2.is_deleted
@@ -96,7 +105,10 @@ def test_forbidden_admin(dbsession, client, param, admin_source):
         f"/user/0",
         json={
             "source": admin_source.name,
-            f"{param1.category.name}": {param1.name: "first_updated", param3.name: "second_updated"},
+            "items": [
+                {"category": param1.category.name, "param": param1.name, "value": "first_updated"},
+                {"category": param3.category.name, "param": param3.name, "value": "second_updated"},
+            ],
         },
     )
     dbsession.expire_all()
@@ -124,7 +136,7 @@ def test_user_update_existing_info(dbsession, client, param, admin_source, sourc
         f"/user/0",
         json={
             "source": "user",
-            f"{param1.category.name}": {param1.name: "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -161,7 +173,7 @@ def test_category_not_found(dbsession, client, param, admin_source):
         f"/user/0",
         json={
             "source": "admin",
-            f"{param1.category.name}404": {param1.name: "first_updated"},
+            "items": [{"category": param1.category.name + "404", "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -183,7 +195,7 @@ def test_param_not_found(dbsession, client, param, admin_source):
         f"/user/0",
         json={
             "source": "admin",
-            f"{param1.category.name}": {f"{param1.name}404": "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name + "404", "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -205,7 +217,9 @@ def test_param_and_cat_not_found(dbsession, client, param, admin_source):
         f"/user/0",
         json={
             "source": "admin",
-            f"{param1.category.name}404": {f"{param1.name}404": "first_updated"},
+            "items": [
+                {"category": param1.category.name + "404", "param": param1.name + "404", "value": "first_updated"}
+            ],
         },
     )
     dbsession.expire_all()
@@ -230,7 +244,7 @@ def test_update_not_changeable(dbsession, client, param, source):
         f"/user/0",
         json={
             "source": "user",
-            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -253,7 +267,7 @@ def test_update_not_changeable_from_admin(dbsession, client, param, admin_source
         f"/user/0",
         json={
             "source": "admin",
-            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -278,7 +292,7 @@ def test_param_not_changeable_no_update_scope(dbsession, client, param, source):
         f"/user/0",
         json={
             "source": "user",
-            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -303,7 +317,7 @@ def test_param_not_changeable_with_scope(dbsession, client, param, source):
         f"/user/0",
         json={
             "source": "user",
-            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -329,7 +343,7 @@ def test_user_source_requires_information_own(dbsession, client, param, source):
         f"/user/0",
         json={
             "source": "user",
-            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -350,7 +364,7 @@ def test_not_available_sources(dbsession, client, param, source):
         f"/user/0",
         json={
             "source": "not_user",
-            f"{param1.category.name}": {f"{param1.name}": "first_updated"},
+            "items": [{"category": param1.category.name, "param": param1.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
@@ -371,7 +385,7 @@ def test_create_new(dbsession, client, param, source, admin_source):
         f"/user/0",
         json={
             "source": "admin",
-            f"{param.category.name}": {f"{param.name}": "admin_info"},
+            "items": [{"category": param.category.name, "param": param.name, "value": "admin_info"}],
         },
     )
     dbsession.expire_all()
@@ -399,10 +413,7 @@ def test_delete(dbsession, client, param, admin_source):
     client.get("/user/0")
     response = client.post(
         f"/user/0",
-        json={
-            "source": "admin",
-            f"{param.category.name}": {f"{param.name}": None},
-        },
+        json={"source": "admin", "items": [{"category": param.category.name, "param": param.name, "value": None}]},
     )
     dbsession.expire_all()
     assert response.status_code == 200
@@ -422,7 +433,7 @@ def test_delete_forbidden_by_category_scope(dbsession, client, param, admin_sour
         f"/user/0",
         json={
             "source": "admin",
-            f"{param.category.name}": {f"{param.name}": None},
+            "items": [{"category": param.category.name, "param": param.name, "value": "first_updated"}],
         },
     )
     dbsession.expire_all()
