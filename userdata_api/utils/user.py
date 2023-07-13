@@ -80,10 +80,7 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         if info.param.type == ViewType.ALL:
             param_dict[info.param].append(info)
         elif (param_dict[info.param] is None) or (
-            (
-                info.param.type == ViewType.LAST
-                and (param_dict[info.param] is None or info.create_ts > param_dict[info.param].create_ts)
-            )
+            (info.param.type == ViewType.LAST and info.create_ts > param_dict[info.param].create_ts)
             or (
                 info.param.type == ViewType.MOST_TRUSTED
                 and (
