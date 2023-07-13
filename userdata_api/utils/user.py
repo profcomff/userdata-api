@@ -96,8 +96,9 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     result = []
     for item in param_dict.values():
         if isinstance(item, list):
-            for _item in item:
-                result.append({"category": _item.category.name, "param": _item.param.name, "value": _item.value})
+            result.extend(
+                [{"category": _item.category.name, "param": _item.param.name, "value": _item.value} for _item in item]
+            )
         else:
             result.append({"category": item.category.name, "param": item.param.name, "value": item.value})
     return UserInfoGet(items=result)
