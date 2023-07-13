@@ -46,11 +46,14 @@ async def patch_user_info(
         if not info and item.value is None:
             continue
         if not info:
+            source = Source.query(session=db.session).filter(Source.name == new.source).one_or_none()
+            if not source:
+                raise ObjectNotFound(Source, new.source)
             Info.create(
                 session=db.session,
                 owner_id=user_id,
                 param_id=param.id,
-                source_id=db.session.query(Source).filter(Source.name == new.source).one_or_none().id,
+                source_id=source.id,
                 value=item.value,
             )
             continue
