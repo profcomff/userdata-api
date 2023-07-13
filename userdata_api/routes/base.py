@@ -29,7 +29,6 @@ app.add_middleware(
     engine_args={"pool_pre_ping": True, "isolation_level": "AUTOCOMMIT"},
 )
 
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ALLOW_ORIGINS,
