@@ -11,6 +11,24 @@ from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
 async def patch_user_info(
     new: UserInfoUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]
 ) -> UserInfoGet:
+    """
+    Обновить информацию о пользователе в соотетствии с переданным токеном.
+
+    Метод обновляет только информацию из источников `admin` и `user`
+
+    Для обновления от имени админа нужен скоуп `userdata.info.admin`
+
+    Для обновления от иимени пользователя необходима владениие ининформацией
+
+    Обноввляет только инормацую созданную самим источником
+
+    Для удаления информации передать None в соответствущем словаре из списка new.items
+
+    :param new: модель запроса, в ней то на что будет изменена информация о пользователе
+    :param user_id: Айди пользователя
+    :param user: Сессия пользователя выполняющего запрос
+    :return: get_user_info для текущего пользователя с переданными правами
+    """
     scope_names = tuple(scope["name"] for scope in user["session_scopes"])
     if new.source == "admin" and "userdata.info.admin" not in scope_names:
         raise Forbidden(f"Admin source requires 'userdata.info.admin' scope")
@@ -71,6 +89,17 @@ async def patch_user_info(
 
 
 async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
+    """
+    Возвращает информауию о пользователе в соотетствии с переданным токеном.
+
+    Пользователь может прочитать любую информацию о себе
+
+    Токен с доступом к read_scope категории может получить доступ к данным категории у любых пользователей
+
+    :param user_id: Айди пользователя
+    :param user: Сессия выполняющего запрос данных
+    :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
+    """
     infos: list[Info] = Info.query(session=db.session).filter(Info.owner_id == user_id).all()
     scope_names = [scope["name"] for scope in user["session_scopes"]]
     param_dict: dict[Param, list[Info] | Info | None] = {}
@@ -95,6 +124,16 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
                 )
             )
         ):
+            """
+            Сюда он зайдет либо если параметру не соответствует никакой информации,
+            либо если встретил более релевантную.
+
+            Если у параметра отображение по доверию, то более релевантная
+            - строго больше индекс доверия/такой же индекс доверия,
+            но информация более поздняя по времени
+
+            Если у параметра отображение по времени то более релевантная - более позднаяя
+            """
             param_dict[info.param] = info
     result = []
     for item in param_dict.values():

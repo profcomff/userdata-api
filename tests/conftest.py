@@ -52,19 +52,6 @@ def category(dbsession):
         dbsession.delete(row)
     dbsession.commit()
 
-
-# @pytest.fixture(scope="module", autouse=True)
-# def cleanup(dbsession):
-#     """Cleanup a testing directory once we are finished."""
-#     yield
-#     dbsession.query(Info).delete()
-#     dbsession.commit()
-#     dbsession.query(Source).delete()
-#     dbsession.query(Param).delete()
-#     dbsession.query(Category).delete()
-#     dbsession.commit()
-
-
 @pytest.fixture
 def param(dbsession, category):
     """

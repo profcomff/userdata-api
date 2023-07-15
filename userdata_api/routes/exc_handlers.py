@@ -17,5 +17,5 @@ async def forbidden_handler(req: starlette.requests.Request, exc: Forbidden):
 
 
 @app.exception_handler(AlreadyExists)
-async def forbidden_handler(req: starlette.requests.Request, exc: AlreadyExists):
+async def already_exists_handler(req: starlette.requests.Request, exc: AlreadyExists):
     return JSONResponse(content=StatusResponseModel(status="Already exists", message=f"{exc}").dict(), status_code=409)
