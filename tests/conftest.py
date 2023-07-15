@@ -52,6 +52,7 @@ def category(dbsession):
         dbsession.delete(row)
     dbsession.commit()
 
+
 @pytest.fixture
 def param(dbsession, category):
     """
