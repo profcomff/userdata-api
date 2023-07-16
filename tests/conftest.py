@@ -17,7 +17,7 @@ def client(auth_mock):
 @pytest.fixture(scope='session')
 def dbsession():
     settings = get_settings()
-    engine = create_engine(settings.DB_DSN)
+    engine = create_engine(str(settings.DB_DSN))
     TestingSessionLocal = sessionmaker(bind=engine)
     yield TestingSessionLocal()
 

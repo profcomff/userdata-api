@@ -1,23 +1,20 @@
-import json
 from typing import Any
 
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, Request
-from fastapi_sqlalchemy import db
-from starlette.responses import Response
+from fastapi import APIRouter, Depends
 
-from userdata_api.schemas.user import user_interface
-from userdata_api.utils.user_get import get_user_info as get_user_info_func
-from userdata_api.utils.user_post import process_post_model
+from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
+from userdata_api.utils.user import get_user_info as get
+from userdata_api.utils.user import patch_user_info as patch
 
 
-user = APIRouter(prefix="/user", tags=["UserGet"])
+user = APIRouter(prefix="/user", tags=["User"])
 
 
-@user.get("/{id}", response_model=user_interface.UserGet)
+@user.get("/{id}", response_model=UserInfoGet)
 async def get_user_info(
     id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
-):
+) -> UserInfoGet:
     """
     Получить информацию о польщователе
     :param id: Айди овнера информации(пользователя)
@@ -31,18 +28,15 @@ async def get_user_info(
     ...
     }
     """
-    await user_interface.refresh(db.session)
-    res = await get_user_info_func(db.session, id, user)
-    return Response(content=json.dumps(res), media_type="application/json")
+    return UserInfoGet.model_validate(await get(id, user))
 
 
-@user.post("/{user_id}", response_model=user_interface.UserGet)
+@user.post("/{id}", response_model=UserInfoGet)
 async def update_user(
-    request: Request,
-    user_id: int,
-    _: user_interface.UserUpdate,
+    new_info: UserInfoUpdate,
+    id: int,
     user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
-) -> user_interface.UserGet:
+) -> UserInfoGet:
     """
     Обновить информацию о пользователе.
     Объект - пользователь, информацию которого обновляют
@@ -61,73 +55,10 @@ async def update_user(
     нужны скоупы на обновление всех указанных в теле запроса категорий пользовательских данных данных
 
 
-    Пример:
-
-    До обновления ответ на `GET /user/{id}` с полным списком прав был таким:
-
-    {
-      "category1": {
-        "param1": [
-          "old_value1", ##admin source
-          "old_value2" ##vk source
-        ],
-        "param2": [
-          "old_value3" ##vk source
-        ]
-      },
-      "category2": {
-        "param3": "old_value4", ##admin source
-        "param5": "old_value5" ##admin source
-      }
-    }
-
-    Запрос на обновление будет такой:
-
-    {
-      "source": "admin",
-      "category1": {
-        "param1": "upd1",
-        "param2": "upd2"
-      },
-      "category2": {
-        "param5": null,
-      },
-      "category3": {
-        "param4": "new",
-      }
-    }
-
-    В таком случае обновится
-
-    После обновления ответ на `GET /user/{id}` с полным списком прав будет таким:
-
-    {
-      "category1": {
-        "param1": [
-          "upd1", ##admin source
-          "old_value2" ##vk source
-        ],
-        "param2": [
-          "old_value3" ##vk source
-          "upd2" ##admin source
-        ]
-      },
-      "category2": {
-        "param3": "old_value4", ##admin source
-      }
-      "category3":{
-        "param4": "new"
-      }
-    }
-
-
     :param request: Запрос из fastapi
     :param user_id: Айди объекта обновленя
     :param _: Модель запроса
     :param user:
     :return:
     """
-    js = await request.json()
-    await process_post_model(user_id, js, user)
-    res = await get_user_info_func(db.session, user_id, user)
-    return Response(content=json.dumps(res), media_type="application/json")
+    return UserInfoGet.model_validate(await patch(new_info, id, user))

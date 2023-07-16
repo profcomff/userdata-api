@@ -9,14 +9,12 @@ from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Source
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.source import SourceGet, SourcePatch, SourcePost
-from userdata_api.utils.user_get import refreshing
 
 
 source = APIRouter(prefix="/source", tags=["Source"])
 
 
 @source.post("", response_model=SourceGet)
-@refreshing
 async def create_source(
     request: Request,
     source_inp: SourcePost,
@@ -55,7 +53,6 @@ async def get_sources() -> list[SourceGet]:
 
 
 @source.patch("/{id}", response_model=SourceGet)
-@refreshing
 async def patch_source(
     request: Request,
     id: int,
@@ -74,7 +71,6 @@ async def patch_source(
 
 
 @source.delete("/{id}", response_model=StatusResponseModel)
-@refreshing
 async def delete_source(
     request: Request,
     id: int,

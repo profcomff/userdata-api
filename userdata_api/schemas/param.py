@@ -13,10 +13,10 @@ class ParamPost(Base):
 
 
 class ParamPatch(Base):
-    name: constr(min_length=1) | None
-    is_required: bool | None
-    changeable: bool | None
-    type: ViewType | None
+    name: constr(min_length=1) | None = None
+    is_required: bool | None = None
+    changeable: bool | None = None
+    type: ViewType | None = None
 
 
 class ParamGet(ParamPost):

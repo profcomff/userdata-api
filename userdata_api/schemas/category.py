@@ -11,9 +11,9 @@ class CategoryPost(Base):
 
 
 class CategoryPatch(Base):
-    name: constr(min_length=1) | None
-    read_scope: Scope | None
-    update_scope: Scope | None
+    name: constr(min_length=1) | None = None
+    read_scope: Scope | None = None
+    update_scope: Scope | None = None
 
 
 class CategoryGet(CategoryPost):
