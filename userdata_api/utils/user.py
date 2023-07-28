@@ -51,8 +51,8 @@ async def patch_user_info(
         if not param:
             raise ObjectNotFound(Param, item.param)
         if (
+            param.category.update_scope is not None and
             param.category.update_scope not in scope_names
-            and param.category.update_scope is not None
             and not (new.source == "user" and user["id"] == user_id)
         ):
             db.session.rollback()
