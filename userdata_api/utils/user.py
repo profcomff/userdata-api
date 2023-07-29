@@ -34,7 +34,7 @@ async def patch_user_info(
         raise Forbidden(f"Admin source requires 'userdata.info.admin' scope")
     if new.source != "admin" and new.source != "user":
         raise Forbidden("HTTP protocol applying only 'admin' and 'user' source")
-    if new.source == "user" and user["user_id"] != user_id:
+    if new.source == "user" and user["id"] != user_id:
         raise Forbidden(f"'user' source requires information own")
     for item in new.items:
         param = (
@@ -50,7 +50,11 @@ async def patch_user_info(
         )
         if not param:
             raise ObjectNotFound(Param, item.param)
-        if param.category.update_scope not in scope_names and not (new.source == "user" and user["user_id"] == user_id):
+        if (
+            param.category.update_scope is not None
+            and param.category.update_scope not in scope_names
+            and not (new.source == "user" and user["id"] == user_id)
+        ):
             db.session.rollback()
             raise Forbidden(f"Updating category {param.category.name=} requires {param.category.update_scope=} scope")
         info = (
@@ -105,7 +109,7 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     param_dict: dict[Param, list[Info] | Info | None] = {}
     for info in infos:
         ## Проверка доступов - нужен либо скоуп на категориию либо нужно быть овнером информации
-        if info.category.read_scope and info.category.read_scope not in scope_names and user["user_id"] != user_id:
+        if info.category.read_scope and info.category.read_scope not in scope_names and user["id"] != user_id:
             continue
         if info.param not in param_dict.keys():
             param_dict[info.param] = [] if info.param.pytype == list[str] else None
