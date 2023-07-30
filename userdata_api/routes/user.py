@@ -3,10 +3,10 @@ from typing import Any
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 
+from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
 from userdata_api.utils.user import get_user_info as get
 from userdata_api.utils.user import patch_user_info as patch
-from userdata_api.schemas.response_model import StatusResponseModel
 
 
 user = APIRouter(prefix="/user", tags=["User"])

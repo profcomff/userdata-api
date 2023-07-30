@@ -8,9 +8,7 @@ from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
 
 
-async def patch_user_info(
-    new: UserInfoUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]
-) -> None:
+async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> None:
     """
     Обновить информацию о пользователе в соотетствии с переданным токеном.
 
