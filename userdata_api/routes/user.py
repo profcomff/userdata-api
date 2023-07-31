@@ -3,6 +3,7 @@ from typing import Any
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends
 
+from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
 from userdata_api.utils.user import get_user_info as get
 from userdata_api.utils.user import patch_user_info as patch
@@ -31,12 +32,12 @@ async def get_user_info(
     return UserInfoGet.model_validate(await get(id, user))
 
 
-@user.post("/{id}", response_model=UserInfoGet)
+@user.post("/{id}", response_model=StatusResponseModel)
 async def update_user(
     new_info: UserInfoUpdate,
     id: int,
     user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
-) -> UserInfoGet:
+) -> StatusResponseModel:
     """
     Обновить информацию о пользователе.
     Объект - пользователь, информацию которого обновляют
@@ -61,4 +62,5 @@ async def update_user(
     :param user:
     :return:
     """
-    return UserInfoGet.model_validate(await patch(new_info, id, user))
+    await patch(new_info, id, user)
+    return StatusResponseModel(status='Success', message='User patch succeeded')

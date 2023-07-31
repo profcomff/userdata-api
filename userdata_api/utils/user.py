@@ -8,9 +8,7 @@ from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
 
 
-async def patch_user_info(
-    new: UserInfoUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]
-) -> UserInfoGet:
+async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> None:
     """
     Обновить информацию о пользователе в соотетствии с переданным токеном.
 
@@ -84,12 +82,12 @@ async def patch_user_info(
                 db.session.rollback()
                 raise Forbidden(f"Param {param.name=} change requires 'userdata.info.update' scope")
             info.value = item.value
-            db.session.commit()
+            db.session.flush()
             continue
-        info.is_deleted = True
-        db.session.flush()
-        continue
-    return await get_user_info(user_id, user)
+        if item.value is None:
+            info.is_deleted = True
+            db.session.flush()
+            continue
 
 
 async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
@@ -105,6 +103,8 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
     """
     infos: list[Info] = Info.query(session=db.session).filter(Info.owner_id == user_id).all()
+    if not infos:
+        raise ObjectNotFound(Info, user_id)
     scope_names = [scope["name"] for scope in user["session_scopes"]]
     param_dict: dict[Param, list[Info] | Info | None] = {}
     for info in infos:

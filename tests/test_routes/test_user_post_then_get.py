@@ -25,7 +25,7 @@ def test_create_new(dbsession, client, param, source, admin_source):
     dbsession.expire_all()
     assert response_upd.status_code == 200
     response_get = client.get("/user/0")
-    assert response_get.json() == response_upd.json()
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded'}
     assert {"category": param.category.name, "param": param.name, "value": "admin_info"} in list(
         response_get.json()["items"]
     )
@@ -63,8 +63,8 @@ def test_delete(dbsession, client, param, admin_source):
     dbsession.expire_all()
     response_get = client.get("/user/0")
     assert response_upd.status_code == 200
-    assert response_get.json() == response_upd.json()
-    assert response_get.json() == {"items": []}
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded'}
+    assert response_get.status_code == 404
     dbsession.delete(info1)
     dbsession.commit()
 
@@ -93,7 +93,8 @@ def test_update(dbsession, client, param, admin_source):
     dbsession.expire_all()
     response_get = client.get("/user/0")
     assert response_upd.status_code == 200
-    assert response_get.json() == response_upd.json()
+    assert response_get.status_code == 200
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded'}
     assert {"category": param.category.name, "param": param.name, "value": "new"} in list(response_get.json()["items"])
     assert len(response_get.json()["items"]) == 1
     dbsession.delete(info1)
@@ -153,8 +154,9 @@ def test_update_not_changeable_with_scopes(dbsession, client, param, admin_sourc
     )
     dbsession.expire_all()
     response_get = client.get("/user/0")
+    assert response_get.status_code == 200
     assert response_upd.status_code == 200
-    assert response_get.json() == response_upd.json()
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded'}
     assert {"category": param.category.name, "param": param.name, "value": "new"} in list(response_get.json()["items"])
     assert len(response_get.json()["items"]) == 1
     dbsession.delete(info1)
@@ -169,15 +171,16 @@ def test_create_new_no_category(dbsession, client, param, admin_source):
     param.category.read_scope = "test.cat_read.first"
     dbsession.commit()
     response_old = client.get("/user/0")
-    assert response_old.json() == {"items": []}
+    assert response_old.status_code == 404
     response_upd = client.post(
         f"/user/0",
         json={"source": "admin", "items": [{"category": param.category.name, "param": param.name, "value": "new"}]},
     )
     dbsession.expire_all()
     response_get = client.get("/user/0")
+    assert response_get.status_code == 200
     assert response_upd.status_code == 200
-    assert response_get.json() == response_upd.json()
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded'}
     assert {"category": param.category.name, "param": param.name, "value": "new"} in list(response_get.json()["items"])
     assert len(response_get.json()["items"]) == 1
     info_new = (
@@ -207,7 +210,8 @@ def test_update_no_read_scope(dbsession, client, param, admin_source):
     dbsession.expire_all()
     response_get = client.get("/user/0")
     assert response_upd.status_code == 200
-    assert response_get.json() == response_upd.json()
+    assert response_get.status_code == 200
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded'}
     assert response_get.json() == {"items": []}
     assert info1.value == "new"
     dbsession.delete(info1)
@@ -240,7 +244,8 @@ def test_update_from_user_source(dbsession, client, param, source):
     dbsession.expire_all()
     response_get = client.get("/user/0")
     assert response_upd.status_code == 200
-    assert response_get.json() == response_upd.json()
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded'}
+    assert response_get.status_code == 200
     assert {"category": param.category.name, "param": param.name, "value": "new_user_info"} in list(
         response_get.json()["items"]
     )
@@ -277,7 +282,7 @@ def test_update_from_user_source_not_changeable(dbsession, client, param, source
     dbsession.expire_all()
     response_get = client.get("/user/0")
     assert response_upd.status_code == 403
-    assert response_get.json() != response_upd.json()
+    assert response_get.status_code == 200
     assert {"category": param.category.name, "param": param.name, "value": "user_info"} in list(
         response_old.json()["items"]
     )
