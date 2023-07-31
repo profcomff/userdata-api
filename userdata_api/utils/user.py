@@ -82,7 +82,7 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
                 db.session.rollback()
                 raise Forbidden(f"Param {param.name=} change requires 'userdata.info.update' scope")
             info.value = item.value
-            db.session.commit()
+            db.session.flush()
             continue
         if item.value is None:
             info.is_deleted = True

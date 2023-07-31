@@ -63,4 +63,4 @@ async def update_user(
     :return:
     """
     await patch(new_info, id, user)
-    return StatusResponseModel(status='Successful', message='User patch succeeded')
+    return StatusResponseModel(status='Success', message='User patch succeeded')
