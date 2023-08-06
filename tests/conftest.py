@@ -3,9 +3,9 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from settings import get_settings
 from userdata_api.models.db import *
 from userdata_api.routes.base import app
-from settings import get_settings
 from userdata_api.utils.utils import random_string
 
 
