@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from userdata_api.models.db import *
 from userdata_api.routes.base import app
-from userdata_api.settings import get_settings
+from settings import get_settings
 from userdata_api.utils.utils import random_string
 
 
