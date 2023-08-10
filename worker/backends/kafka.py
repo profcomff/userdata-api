@@ -2,23 +2,20 @@ import json
 import logging
 from pprint import pformat
 
-from confluent_kafka import Consumer, KafkaException, Message
+from confluent_kafka import Consumer, Message
 from event_schema.auth import UserLogin, UserLoginKey
 from pydantic import ValidationError
-from sqlalchemy import not_
-from sqlalchemy.orm import Session
 
 from settings import get_settings
 from userdata_api import __version__
-from userdata_api.models.db import Category, Info, Param, Source
 
-from .pg import PgSession
+from .kafkameta import KafkaMeta
 
 
 log = logging.getLogger(__name__)
 
 
-class KafkaConsumer:
+class KafkaConsumer(KafkaMeta):
     __dsn: str = get_settings().KAFKA_DSN
     __devel: bool = True if __version__ == "dev" else False
     __conf: dict[str, str] = {}
@@ -26,7 +23,6 @@ class KafkaConsumer:
     __password: str | None = get_settings().KAFKA_PASSWORD
     __group_id: str | None = get_settings().KAFKA_GROUP_ID
     __topics: list[str] = get_settings().KAFKA_TOPICS
-    _pg = PgSession()
     _consumer: Consumer
 
     def __configurate(self) -> None:
@@ -82,60 +78,6 @@ class KafkaConsumer:
         user_info = UserLogin.model_validate(msg.value())
         user_id = UserLoginKey.model_validate(msg.key()).user_id
         return user_id, user_info
-
-    def _patch_user_info(self, new: UserLogin, user_id: int) -> None:
-        with self._pg as pg:
-            for item in new.items:
-                param = (
-                    pg.query(Param)
-                    .join(Category)
-                    .filter(
-                        Param.name == item.param,
-                        Category.name == item.category,
-                        not_(Param.is_deleted),
-                        not_(Category.is_deleted),
-                    )
-                    .one_or_none()
-                )
-                if not param:
-                    pg.rollback()
-                    log.error(f"Param {item.param=} not found")
-                    return
-                info = (
-                    pg.query(Info)
-                    .join(Source)
-                    .filter(
-                        Info.param_id == param.id,
-                        Info.owner_id == user_id,
-                        Source.name == new.source,
-                        not_(Info.is_deleted),
-                    )
-                    .one_or_none()
-                )
-                if not info and item.value is None:
-                    continue
-                if not info:
-                    source = Source.query(session=pg).filter(Source.name == new.source).one_or_none()
-                    if not source:
-                        pg.rollback()
-                        log.warning(f"Source {new.source=} not found")
-                        return
-                    Info.create(
-                        session=pg,
-                        owner_id=user_id,
-                        param_id=param.id,
-                        source_id=source.id,
-                        value=item.value,
-                    )
-                    continue
-                if item.value is not None:
-                    info.value = item.value
-                    pg.flush()
-                    continue
-                if item.value is None:
-                    info.is_deleted = True
-                    pg.flush()
-                    continue
 
     def run(self) -> None:
         try:
