@@ -58,7 +58,6 @@ def info(param, source, dbsession):
         pass
 
 
-
 def test_create(param, source, dbsession):
     with pytest.raises(sqlalchemy.exc.NoResultFound):
         dbsession.query(Info).filter(Info.param_id == param.id, Info.source_id == source.id, Info.value == "test").one()
@@ -67,7 +66,8 @@ def test_create(param, source, dbsession):
             {"items": [{"category": param.category.name, "param": param.name, "value": "test"}], "source": source.name}
         ),
         1,
-    session=dbsession)
+        session=dbsession,
+    )
     info = (
         dbsession.query(Info).filter(Info.param_id == param.id, Info.source_id == source.id, Info.value == "test").one()
     )
@@ -86,7 +86,8 @@ def test_update(info, dbsession):
             }
         ),
         1,
-    session=dbsession)
+        session=dbsession,
+    )
 
     dbsession.expire(info)
     assert info.value == "updated"
@@ -102,7 +103,8 @@ def test_delete(info, dbsession):
             }
         ),
         1,
-    session=dbsession)
+        session=dbsession,
+    )
 
     dbsession.expire(info)
     assert info.is_deleted is True
