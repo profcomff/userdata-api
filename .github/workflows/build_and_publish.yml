@@ -140,7 +140,7 @@ jobs:
             alembic upgrade head
 
       - name: Run new version API
-        id: run_prod
+        id: run_prod_api
         run: |
           docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
           docker run \
@@ -154,7 +154,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Run new version worker
-        id: run_prod
+        id: run_prod_worker
         run: |
           docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
           docker run \
