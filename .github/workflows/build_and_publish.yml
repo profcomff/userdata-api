@@ -108,7 +108,7 @@ jobs:
             --env ROOT_PATH='/userdata' \
             --env GUNICORN_CMD_ARGS='--log-config logging_test.conf' \
             --name ${{ env.CONTAINER_NAME }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test python -m worker
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test python -m userdata_api start --instance worker
       
 
   deploy-production:
@@ -170,4 +170,4 @@ jobs:
             --env ROOT_PATH='/userdata' \
             --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
             --name ${{ env.CONTAINER_NAME }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest python -m worker
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest python -m userdata_api start --instance worker
