@@ -10,6 +10,7 @@ from userdata_api import __version__
 
 from .kafkameta import KafkaMeta
 
+
 log = logging.getLogger(__name__)
 
 
@@ -61,12 +62,10 @@ class KafkaConsumer(KafkaMeta):
     def _on_assign(consumer, partitions):
         log.info(f'Assignment: {partitions}')
 
-
     def __init__(self):
         self.__configurate()
         self._consumer = Consumer(self.__conf)
         self._consumer.subscribe(["test-user-login"], on_assign=KafkaConsumer._on_assign)
-
 
     def _parse_message(self, msg: Message) -> tuple[int, UserLogin]:
         user_info = UserLogin.model_validate(json.loads(msg.value()))
