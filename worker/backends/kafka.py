@@ -77,6 +77,7 @@ class KafkaConsumer(KafkaMeta):
 
     def close(self):
         self._consumer.close()
+        self._pg.close()
 
     def run(self) -> None:
         try:
