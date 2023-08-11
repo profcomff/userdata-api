@@ -10,6 +10,7 @@ from settings import get_settings
 from userdata_api import __version__
 
 from .kafkameta import KafkaMeta
+from .pg import PgSession
 
 
 log = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ class KafkaConsumer(KafkaMeta):
     __password: str | None = get_settings().KAFKA_PASSWORD
     __group_id: str | None = get_settings().KAFKA_GROUP_ID
     __topics: list[str] = get_settings().KAFKA_TOPICS
+    _pg = PgSession()
     _consumer: Consumer
 
     def __configurate(self) -> None:
@@ -61,23 +63,20 @@ class KafkaConsumer(KafkaMeta):
 
     @staticmethod
     def _on_assign(consumer, partitions):
-        print("ASDasdasd")
         log.info(f'Assignment: {partitions}')
 
     def __init__(self):
         self.__configurate()
-        self._consumer = Consumer(self.__conf, debug='fetch', logger=log)
-        if diff := set(self.__topics) - set(self._consumer.list_topics()):
-            assert False, f"Topics from {diff=} doesn't exists"
-        self._consumer.subscribe(self.__topics, on_assign=KafkaConsumer._on_assign)
-
-    def close(self) -> None:
-        self._consumer.close()
+        self._consumer = Consumer(self.__conf)
+        self._consumer.subscribe(["test-user-login"], on_assign=KafkaConsumer._on_assign)
 
     def _parse_message(self, msg: Message) -> tuple[int, UserLogin]:
-        user_info = UserLogin.model_validate(msg.value())
-        user_id = UserLoginKey.model_validate(msg.key()).user_id
+        user_info = UserLogin.model_validate(json.loads(msg.value()))
+        user_id = UserLoginKey.model_validate(json.loads(msg.key())).user_id
         return user_id, user_info
+
+    def close(self):
+        self._consumer.close()
 
     def run(self) -> None:
         try:
@@ -92,6 +91,7 @@ class KafkaConsumer(KafkaMeta):
                 log.info('%% %s [%d] at offset %d\n' % (msg.topic(), msg.partition(), msg.offset()))
                 try:
                     user_id, user_info = self._parse_message(msg)
+                    print(user_id, user_info)
                 except ValidationError:
                     log.error(f"Message skipped due to validation error", exc_info=True)
                     self._consumer.store_offsets(msg)

@@ -26,3 +26,6 @@ class PgSession:
         if self.commit_on_exit:
             self._session.commit()
         self._session.close()
+
+    def close(self) -> None:
+        self._Session.close_all()

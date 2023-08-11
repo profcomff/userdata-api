@@ -60,7 +60,8 @@ def info(param, source, dbsession):
 
 @pytest.fixture()
 def consumer():
-    yield ConsumerMock()
+    yield (cons := ConsumerMock())
+    cons.close()
 
 
 def test_create(consumer, param, source, dbsession):

@@ -77,8 +77,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test \
             alembic upgrade head
 
-      - name: Run new version
-        id: run_prod
+      - name: Run new version API
+        id: run_test_api
         run: |
           docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
           docker run \
@@ -90,6 +90,26 @@ jobs:
             --env GUNICORN_CMD_ARGS='--log-config logging_test.conf' \
             --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
+
+      - name: Run new version worker
+        id: run_test_worker
+        run: |
+          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
+          docker run \
+            --detach \
+            --restart always \
+            --network=web \
+            --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env KAFKA_DSN='${{ secrets.KAFKA_DSN }}' \
+            --env KAFKA_LOGIN='${{ secrets.KAFKA_LOGIN }}' \
+            --env KAFKA_PASSWORD='${{ secrets.KAFKA_PASSWORD }}' \
+            --env KAFKA_GROUP_ID='${{ vars.KAFKA_GROUP_ID }}' \
+            --env KAFKA_TOPICS='${{ vars.KAFKA_TOPICS }}' \
+            --env ROOT_PATH='/userdata' \
+            --env GUNICORN_CMD_ARGS='--log-config logging_test.conf' \
+            --name ${{ env.CONTAINER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test python -m worker
+      
 
   deploy-production:
     name: Deploy Production
@@ -119,8 +139,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             alembic upgrade head
 
-      - name: Run new version
-        id: run_test
+      - name: Run new version API
+        id: run_prod
         run: |
           docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
           docker run \
@@ -132,3 +152,22 @@ jobs:
             --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
             --name ${{ env.CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Run new version worker
+        id: run_prod
+        run: |
+          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
+          docker run \
+            --detach \
+            --restart always \
+            --network=web \
+            --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env KAFKA_DSN='${{ secrets.KAFKA_DSN }}' \
+            --env KAFKA_LOGIN='${{ secrets.KAFKA_LOGIN }}' \
+            --env KAFKA_PASSWORD='${{ secrets.KAFKA_PASSWORD }}' \
+            --env KAFKA_GROUP_ID='${{ vars.KAFKA_GROUP_ID }}' \
+            --env KAFKA_TOPICS='${{ vars.KAFKA_TOPICS }}' \
+            --env ROOT_PATH='/userdata' \
+            --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
+            --name ${{ env.CONTAINER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest python -m worker

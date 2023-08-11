@@ -1,3 +1,4 @@
+import logging
 from abc import ABC, abstractmethod
 
 from event_schema.auth import UserLogin
@@ -5,6 +6,9 @@ from sqlalchemy import not_
 
 from userdata_api.models.db import Category, Info, Param, Source
 from worker.backends.pg import PgSession
+
+
+log = logging.getLogger(__name__)
 
 
 class KafkaMeta(ABC):
