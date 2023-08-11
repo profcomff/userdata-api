@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 import pydantic
@@ -5,10 +6,11 @@ from event_schema.auth import UserLogin, UserLoginKey
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from worker.kafka import KafkaConsumer
-from .user import patch_user_info
-import logging
 from settings import get_settings
+from worker.kafka import KafkaConsumer
+
+from .user import patch_user_info
+
 
 log = logging.getLogger(__name__)
 settings = get_settings()
@@ -40,9 +42,3 @@ def process():
         except KeyboardInterrupt:
             log.warning("Worker stopped by user")
             exit(0)
-
-
-
-
-
-

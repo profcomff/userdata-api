@@ -1,14 +1,12 @@
 import json
 import logging
-import time
+from typing import Any, Iterator
 
-from confluent_kafka import Consumer, Message, TopicPartition
-from event_schema.auth import UserLogin, UserLoginKey
-from pydantic import ValidationError
+from confluent_kafka import Consumer
 
 from settings import get_settings
 from userdata_api import __version__
-from typing import Iterator, Any
+
 
 log = logging.getLogger(__name__)
 
@@ -19,8 +17,8 @@ class KafkaConsumer:
     __conf: dict[str, str] = {}  # Connect configuration
     __login: str | None = get_settings().KAFKA_LOGIN
     __password: str | None = get_settings().KAFKA_PASSWORD
-    __group_id: str | None = get_settings().KAFKA_GROUP_ID # Consumer group id
-    __topics: list[str] = get_settings().KAFKA_TOPICS # Kafka topics to listen
+    __group_id: str | None = get_settings().KAFKA_GROUP_ID  # Consumer group id
+    __topics: list[str] = get_settings().KAFKA_TOPICS  # Kafka topics to listen
     _consumer: Consumer
 
     def __configurate(self) -> None:

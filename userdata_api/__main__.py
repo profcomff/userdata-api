@@ -1,9 +1,10 @@
+import argparse
+
 import uvicorn
 
 from userdata_api.routes.base import app
-
-import argparse
 from worker.consumer import process
+
 
 def get_args():
     parser = argparse.ArgumentParser()
@@ -15,7 +16,6 @@ def get_args():
     return parser.parse_args()
 
 
-
 if __name__ == '__main__':
     args = get_args()
     match args.instance:
@@ -23,4 +23,3 @@ if __name__ == '__main__':
             uvicorn.run(app)
         case "worker":
             process()
-
