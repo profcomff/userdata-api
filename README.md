@@ -21,7 +21,8 @@
     ```
 4. Запускайте приложение!
     ```console
-    foo@bar:~$ python -m userdata_api
+    foo@bar:~$ python -m userdata_api start --instance api -- запустит АПИ
+    foo@bar:~$ python -m userdata_api start --instance worker -- запустит Kafka worker
     ```
 
 ## ENV-file description
