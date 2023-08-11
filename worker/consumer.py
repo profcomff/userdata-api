@@ -20,7 +20,7 @@ _engine = create_engine(str(settings.DB_DSN), pool_pre_ping=True, isolation_leve
 _Session = sessionmaker(bind=_engine)
 
 
-def process_message(key: Any, value: Any) -> tuple[UserLoginKey | None, UserLogin | None]:
+def process_models(key: Any, value: Any) -> tuple[UserLoginKey | None, UserLogin | None]:
     try:
         return UserLoginKey.model_validate(key), UserLogin.model_validate(value)
     except pydantic.ValidationError:
@@ -28,17 +28,13 @@ def process_message(key: Any, value: Any) -> tuple[UserLoginKey | None, UserLogi
         return None, None
 
 
+def process_message(message: tuple[Any, Any]) -> None:
+    processed_k, processed_v = process_models(*message)
+    if not (processed_k and processed_v):
+        return
+    patch_user_info(processed_v, processed_k.user_id, session=_Session())
+
+
 def process():
-    while 1:
-        try:
-            for k, v in consumer.listen():
-                processed_k, processed_v = process_message(k, v)
-                if not (processed_k and processed_v):
-                    continue
-                patch_user_info(processed_v, processed_k.user_id, session=_Session())
-        except Exception:
-            log.error("Error occurred", exc_info=True)
-            consumer.reconnect()
-        except KeyboardInterrupt:
-            log.warning("Worker stopped by user")
-            exit(0)
+    for message in consumer.listen():
+        process_message(message)

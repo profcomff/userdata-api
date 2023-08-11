@@ -73,7 +73,7 @@ class KafkaConsumer:
     def close(self):
         self._consumer.close()
 
-    def listen(self) -> Iterator[tuple[Any, Any]]:
+    def _listen(self) -> Iterator[tuple[Any, Any]]:
         try:
             while True:
                 msg = self._consumer.poll(timeout=1.0)
@@ -86,10 +86,20 @@ class KafkaConsumer:
                 log.info('%% %s [%d] at offset %d\n' % (msg.topic(), msg.partition(), msg.offset()))
                 try:
                     yield json.loads(msg.key()), json.loads(msg.value())
-                    raise Exception
                 except json.JSONDecodeError:
                     log.error("Json decode error occurred", exc_info=True)
                 self._consumer.store_offsets(msg)
         finally:
             log.info("Consumer closed")
             self.close()
+
+    def listen(self) -> Iterator[tuple[Any, Any]]:
+        while 1:
+            try:
+                yield from self._listen()
+            except Exception:
+                log.error("Error occurred", exc_info=True)
+                self.reconnect()
+            except KeyboardInterrupt:
+                log.warning("Worker stopped by user")
+                exit(0)
