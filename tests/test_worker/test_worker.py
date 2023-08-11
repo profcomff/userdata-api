@@ -4,7 +4,7 @@ from event_schema.auth import UserLogin
 
 from userdata_api.models.db import Category, Info, Param, Source
 from userdata_api.utils.utils import random_string
-from worker.backends.mock import ConsumerMock
+from worker.user import patch_user_info
 
 
 @pytest.fixture()
@@ -58,21 +58,16 @@ def info(param, source, dbsession):
         pass
 
 
-@pytest.fixture()
-def consumer():
-    yield (cons := ConsumerMock())
-    cons.close()
 
-
-def test_create(consumer, param, source, dbsession):
+def test_create(param, source, dbsession):
     with pytest.raises(sqlalchemy.exc.NoResultFound):
         dbsession.query(Info).filter(Info.param_id == param.id, Info.source_id == source.id, Info.value == "test").one()
-    consumer._patch_user_info(
+    patch_user_info(
         UserLogin.model_validate(
             {"items": [{"category": param.category.name, "param": param.name, "value": "test"}], "source": source.name}
         ),
         1,
-    )
+    session=dbsession)
     info = (
         dbsession.query(Info).filter(Info.param_id == param.id, Info.source_id == source.id, Info.value == "test").one()
     )
@@ -81,9 +76,9 @@ def test_create(consumer, param, source, dbsession):
     dbsession.commit()
 
 
-def test_update(info, dbsession, consumer):
+def test_update(info, dbsession):
     assert info.value != "updated"
-    consumer._patch_user_info(
+    patch_user_info(
         UserLogin.model_validate(
             {
                 "items": [{"category": info.category.name, "param": info.param.name, "value": "updated"}],
@@ -91,15 +86,15 @@ def test_update(info, dbsession, consumer):
             }
         ),
         1,
-    )
+    session=dbsession)
 
     dbsession.expire(info)
     assert info.value == "updated"
 
 
-def test_delete(info, dbsession, consumer):
+def test_delete(info, dbsession):
     assert info.is_deleted is False
-    consumer._patch_user_info(
+    patch_user_info(
         UserLogin.model_validate(
             {
                 "items": [{"category": info.category.name, "param": info.param.name, "value": None}],
@@ -107,7 +102,7 @@ def test_delete(info, dbsession, consumer):
             }
         ),
         1,
-    )
+    session=dbsession)
 
     dbsession.expire(info)
     assert info.is_deleted is True
