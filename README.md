@@ -24,6 +24,16 @@
     foo@bar:~$ python -m userdata_api start --instance api -- запустит АПИ
     foo@bar:~$ python -m userdata_api start --instance worker -- запустит Kafka worker
     ```
+   
+Приложение состоит из двух частей - АПИ и Kafka worker'а. 
+
+АПИ нужно для управления структурой пользовательских данных - 
+контроль над категориями данных, параметрами, источниками данных.
+Также, в АПИ пользовательские данные может слать
+сам пользователь(владелец этих данных), а также админ
+
+Kafka worker нужен для того, чтобы разгребать поступающие от OAuth 
+методов авторизации AuthAPI пользовательские данные
 
 ## ENV-file description
 - `DB_DSN=postgresql://postgres@localhost:5432/postgres` – Данные для подключения к БД
