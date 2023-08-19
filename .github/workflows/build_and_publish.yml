@@ -108,7 +108,7 @@ jobs:
             --env KAFKA_TOPICS='${{ vars.KAFKA_TOPICS }}' \
             --env ROOT_PATH='/userdata' \
             --env GUNICORN_CMD_ARGS='--log-config logging_test.conf' \
-            --name ${{ env.API_CONTAINER_NAME }} \
+            --name ${{ env.WORKER_CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test python -m userdata_api start --instance worker
       
 
@@ -171,5 +171,5 @@ jobs:
             --env KAFKA_TOPICS='${{ vars.KAFKA_TOPICS }}' \
             --env ROOT_PATH='/userdata' \
             --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
-            --name ${{ env.API_CONTAINER_NAME }} \
+            --name ${{ env.WORKER_CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest python -m userdata_api start --instance worker
