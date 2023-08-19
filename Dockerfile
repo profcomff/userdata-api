@@ -11,8 +11,7 @@ RUN pip install -U -r /app/requirements.txt
 
 COPY ./alembic.ini /alembic.ini
 COPY ./migrations /migrations/
+COPY ./settings.py /app/settings.py
 
 COPY ./${APP_NAME} /app/${APP_NAME}
-
-
-
+COPY ./worker /app/worker
