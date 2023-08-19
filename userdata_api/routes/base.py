@@ -2,8 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_sqlalchemy import DBSessionMiddleware
 
+from settings import get_settings
 from userdata_api import __version__
-from userdata_api.settings import get_settings
 
 from .category import category
 from .param import param

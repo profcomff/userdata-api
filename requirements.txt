@@ -9,3 +9,5 @@ pydantic[dotenv]
 SQLAlchemy
 uvicorn
 pydantic-settings
+event_schema_profcomff
+confluent_kafka

@@ -58,7 +58,8 @@ jobs:
       name: Testing
       url: https://api.test.profcomff.com/userdata
     env:
-      CONTAINER_NAME: com_profcomff_api_userdata_test
+      API_CONTAINER_NAME: com_profcomff_api_userdata_test
+      WORKER_CONTAINER_NAME: com_profcomff_worker_userdata_test
     permissions:
       packages: read
 
@@ -72,15 +73,15 @@ jobs:
             --rm \
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --name ${{ env.CONTAINER_NAME }}_migration \
+            --name ${{ env.API_CONTAINER_NAME }}_migration \
             --workdir="/" \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test \
             alembic upgrade head
 
-      - name: Run new version
-        id: run_prod
+      - name: Run new version API
+        id: run_test_api
         run: |
-          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
+          docker stop ${{ env.API_CONTAINER_NAME }} || true && docker rm ${{ env.API_CONTAINER_NAME }} || true
           docker run \
             --detach \
             --restart always \
@@ -88,8 +89,26 @@ jobs:
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env ROOT_PATH='/userdata' \
             --env GUNICORN_CMD_ARGS='--log-config logging_test.conf' \
-            --name ${{ env.CONTAINER_NAME }} \
+            --name ${{ env.API_CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
+
+      - name: Run new version worker
+        id: run_test_worker
+        run: |
+          docker stop ${{ env.WORKER_CONTAINER_NAME }} || true && docker rm ${{ env.WORKER_CONTAINER_NAME }} || true
+          docker run \
+            --detach \
+            --restart always \
+            --network=web \
+            --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env KAFKA_DSN='${{ secrets.KAFKA_DSN }}' \
+            --env KAFKA_LOGIN='${{ secrets.KAFKA_LOGIN }}' \
+            --env KAFKA_PASSWORD='${{ secrets.KAFKA_PASSWORD }}' \
+            --env KAFKA_GROUP_ID='${{ vars.KAFKA_GROUP_ID }}' \
+            --env KAFKA_TOPICS='${{ vars.KAFKA_TOPICS }}' \
+            --name ${{ env.WORKER_CONTAINER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test python -m userdata_api start --instance worker
+      
 
   deploy-production:
     name: Deploy Production
@@ -100,7 +119,8 @@ jobs:
       name: Production
       url: https://api.profcomff.com/userdata
     env:
-      CONTAINER_NAME: com_profcomff_api_userdata
+      API_CONTAINER_NAME: com_profcomff_api_userdata
+      WORKER_CONTAINER_NAME: com_profcomff_worker_userdata
     permissions:
       packages: read
 
@@ -114,15 +134,15 @@ jobs:
             --rm \
             --network=web \
             --env DB_DSN=${{ secrets.DB_DSN }} \
-            --name ${{ env.CONTAINER_NAME }}_migration \
+            --name ${{ env.API_CONTAINER_NAME }}_migration \
             --workdir="/" \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
             alembic upgrade head
 
-      - name: Run new version
-        id: run_test
+      - name: Run new version API
+        id: run_prod_api
         run: |
-          docker stop ${{ env.CONTAINER_NAME }} || true && docker rm ${{ env.CONTAINER_NAME }} || true
+          docker stop ${{ env.API_CONTAINER_NAME }} || true && docker rm ${{ env.API_CONTAINER_NAME }} || true
           docker run \
             --detach \
             --restart always \
@@ -130,5 +150,22 @@ jobs:
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env ROOT_PATH='/userdata' \
             --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
-            --name ${{ env.CONTAINER_NAME }} \
+            --name ${{ env.API_CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+      - name: Run new version worker
+        id: run_prod_worker
+        run: |
+          docker stop ${{ env.WORKER_CONTAINER_NAME }} || true && docker rm ${{ env.WORKER_CONTAINER_NAME }} || true
+          docker run \
+            --detach \
+            --restart always \
+            --network=web \
+            --env DB_DSN='${{ secrets.DB_DSN }}' \
+            --env KAFKA_DSN='${{ secrets.KAFKA_DSN }}' \
+            --env KAFKA_LOGIN='${{ secrets.KAFKA_LOGIN }}' \
+            --env KAFKA_PASSWORD='${{ secrets.KAFKA_PASSWORD }}' \
+            --env KAFKA_GROUP_ID='${{ vars.KAFKA_GROUP_ID }}' \
+            --env KAFKA_TOPICS='${{ vars.KAFKA_TOPICS }}' \
+            --name ${{ env.WORKER_CONTAINER_NAME }} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest python -m userdata_api start --instance worker

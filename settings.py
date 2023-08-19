@@ -9,6 +9,13 @@ class Settings(BaseSettings):
     """Application settings"""
 
     DB_DSN: PostgresDsn = 'postgresql://postgres@localhost:5432/postgres'
+
+    KAFKA_DSN: str | None = None
+    KAFKA_LOGIN: str | None = None
+    KAFKA_PASSWORD: str | None = None
+    KAFKA_TOPICS: list[str] | None = None
+    KAFKA_GROUP_ID: str | None = None
+
     ROOT_PATH: str = '/' + os.getenv("APP_NAME", "")
 
     CORS_ALLOW_ORIGINS: list[str] = ['*']
