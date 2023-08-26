@@ -38,7 +38,6 @@ def test_create_with_no_scopes(client, dbsession):
     dbsession.commit()
 
 
-@pytest.mark.authenticated()
 def test_get(client, dbsession, category):
     _category = category()
     response = client.get(f"/category/{_category.id}")
@@ -49,7 +48,6 @@ def test_get(client, dbsession, category):
     assert response.json()["name"] == _category.name
 
 
-@pytest.mark.authenticated()
 def test_get_all(client, dbsession, category):
     category1 = category()
     category2 = category()

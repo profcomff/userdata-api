@@ -36,8 +36,7 @@ async def create_category(
 
 @category.get("/{id}", response_model=CategoryGet)
 async def get_category(
-    id: int,
-    _: dict[str, str] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
+    id: int
 ) -> CategoryGet:
     """
     Получить категорию
@@ -51,8 +50,7 @@ async def get_category(
 
 @category.get("", response_model=list[CategoryGet], response_model_exclude_none=True)
 async def get_categories(
-    query: list[Literal["param"]] = Query(default=[]),
-    _: dict[str, str] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
+    query: list[Literal["param"]] = Query(default=[])
 ) -> list[CategoryGet]:
     result = []
     for category in Category.query(session=db.session).all():
