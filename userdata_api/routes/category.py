@@ -35,9 +35,7 @@ async def create_category(
 
 
 @category.get("/{id}", response_model=CategoryGet)
-async def get_category(
-    id: int
-) -> CategoryGet:
+async def get_category(id: int) -> CategoryGet:
     """
     Получить категорию
     :param id: Айди категории
@@ -49,9 +47,7 @@ async def get_category(
 
 
 @category.get("", response_model=list[CategoryGet], response_model_exclude_none=True)
-async def get_categories(
-    query: list[Literal["param"]] = Query(default=[])
-) -> list[CategoryGet]:
+async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> list[CategoryGet]:
     result = []
     for category in Category.query(session=db.session).all():
         to_append = category.dict()
