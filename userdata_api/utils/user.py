@@ -102,7 +102,13 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
     """
-    infos: list[Info] = Info.query(session=db.session).filter(Info.owner_id == user_id).all()
+    infos: list[Info] = (
+        Info.query(session=db.session)
+        .join(Param)
+        .join(Category)
+        .filter(Info.owner_id == user_id, not_(Param.is_deleted), not_(Category.is_deleted))
+        .all()
+    )
     if not infos:
         raise ObjectNotFound(Info, user_id)
     scope_names = [scope["name"] for scope in user["session_scopes"]]
