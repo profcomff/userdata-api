@@ -38,7 +38,7 @@ def test_create_with_no_scopes(client, dbsession):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.category.read")
+@pytest.mark.authenticated()
 def test_get(client, dbsession, category):
     _category = category()
     response = client.get(f"/category/{_category.id}")
@@ -49,7 +49,7 @@ def test_get(client, dbsession, category):
     assert response.json()["name"] == _category.name
 
 
-@pytest.mark.authenticated("userdata.category.read")
+@pytest.mark.authenticated()
 def test_get_all(client, dbsession, category):
     category1 = category()
     category2 = category()
@@ -89,7 +89,7 @@ def test_update(client, dbsession, category):
     assert _category.update_scope == old_update_scope
 
 
-@pytest.mark.authenticated("userdata.category.delete", "userdata.category.read")
+@pytest.mark.authenticated("userdata.category.delete")
 def test_delete(client, dbsession, category):
     _category = category()
     response = client.delete(f"/category/{_category.id}")

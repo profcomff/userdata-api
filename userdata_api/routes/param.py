@@ -3,7 +3,7 @@ from typing import Any
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
-from pydantic import parse_obj_as
+from pydantic.type_adapter import TypeAdapter
 
 from userdata_api.exceptions import AlreadyExists, ObjectNotFound
 from userdata_api.models.db import Category, Param
@@ -32,7 +32,7 @@ async def create_param(
     Category.get(category_id, session=db.session)
     if Param.query(session=db.session).filter(Param.category_id == category_id, Param.name == param_inp.name).all():
         raise AlreadyExists(Param, param_inp.name)
-    return ParamGet.from_orm(Param.create(session=db.session, **param_inp.dict(), category_id=category_id))
+    return ParamGet.model_validate(Param.create(session=db.session, **param_inp.dict(), category_id=category_id))
 
 
 @param.get("/{id}", response_model=ParamGet)
@@ -46,7 +46,7 @@ async def get_param(id: int, category_id: int) -> ParamGet:
     res = Param.query(session=db.session).filter(Param.id == id, Param.category_id == category_id).one_or_none()
     if not res:
         raise ObjectNotFound(Param, id)
-    return ParamGet.from_orm(res)
+    return ParamGet.model_validate(res)
 
 
 @param.get("", response_model=list[ParamGet])
@@ -56,7 +56,8 @@ async def get_params(category_id: int) -> list[ParamGet]:
     :param category_id: Айди категории
     :return: list[ParamGet] - список полученных параметров
     """
-    return parse_obj_as(list[ParamGet], Param.query(session=db.session).filter(Param.category_id == category_id).all())
+    type_adapter = TypeAdapter(list[ParamGet])
+    return type_adapter.validate_python(Param.query(session=db.session).filter(Param.category_id == category_id).all())
 
 
 @param.patch("/{id}", response_model=ParamGet)
@@ -82,7 +83,7 @@ async def patch_param(
         return ParamGet.from_orm(
             Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True), category_id=category_id)
         )
-    return ParamGet.from_orm(Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True)))
+    return ParamGet.model_validate(Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True)))
 
 
 @param.delete("/{id}", response_model=StatusResponseModel)

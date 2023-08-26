@@ -1,6 +1,7 @@
 from pydantic import constr
 
 from .base import Base
+from .param import ParamGet
 from .types.scope import Scope
 
 
@@ -18,3 +19,4 @@ class CategoryPatch(Base):
 
 class CategoryGet(CategoryPost):
     id: int
+    params: list[ParamGet] | None = None
