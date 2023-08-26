@@ -1,7 +1,9 @@
+from typing import Literal
+
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from fastapi_sqlalchemy import db
-from pydantic import parse_obj_as
+from pydantic.type_adapter import TypeAdapter
 
 from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Category
@@ -29,13 +31,13 @@ async def create_category(
     if Category.query(session=db.session).filter(Category.name == category_inp.name).all():
         raise AlreadyExists(Category, category_inp.name)
     category = Category.create(session=db.session, **category_inp.dict())
-    return CategoryGet.from_orm(category)
+    return CategoryGet.model_validate(category)
 
 
 @category.get("/{id}", response_model=CategoryGet)
 async def get_category(
     id: int,
-    _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.read"], allow_none=False, auto_error=True)),
+    _: dict[str, str] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> CategoryGet:
     """
     Получить категорию
@@ -47,16 +49,27 @@ async def get_category(
     return CategoryGet.model_validate(category)
 
 
-@category.get("", response_model=list[CategoryGet])
+@category.get("", response_model=list[CategoryGet], response_model_exclude_none=True)
 async def get_categories(
-    _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.read"], allow_none=False, auto_error=True))
+    query: list[Literal["param"]] = Query(default=[]),
+    _: dict[str, str] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> list[CategoryGet]:
+    result = []
+    for category in Category.query(session=db.session).all():
+        to_append = category.dict()
+        if "param" in query:
+            to_append["params"] = []
+            for param in category.params:
+                to_append["params"].append(param.dict())
+        result.append(to_append)
     """
     Получить все категории
+    :param query: 
     :param _: Аутентифиуация
     :return: Список категорий. В каждой ноде списка - информация о скоупах, которые нужны для получения пользовательских данных этой категории
     """
-    return parse_obj_as(list[CategoryGet], Category.query(session=db.session).all())
+    type_adapter = TypeAdapter(list[CategoryGet])
+    return type_adapter.validate_python(result)
 
 
 @category.patch("/{id}", response_model=CategoryGet)
@@ -75,7 +88,7 @@ async def patch_category(
     :return: CategoryGet - обновленную категорию
     """
     category: Category = Category.get(id, session=db.session)
-    return CategoryGet.from_orm(Category.update(id, session=db.session, **category_inp.dict(exclude_unset=True)))
+    return CategoryGet.model_validate(Category.update(id, session=db.session, **category_inp.dict(exclude_unset=True)))
 
 
 @category.delete("/{id}", response_model=StatusResponseModel)

@@ -3,7 +3,7 @@ from typing import Any
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
-from pydantic import parse_obj_as
+from pydantic.type_adapter import TypeAdapter
 
 from userdata_api.exceptions import AlreadyExists
 from userdata_api.models.db import Source
@@ -30,7 +30,7 @@ async def create_source(
     source = Source.query(session=db.session).filter(Source.name == source_inp.name).all()
     if source:
         raise AlreadyExists(Source, source_inp.name)
-    return SourceGet.from_orm(Source.create(session=db.session, **source_inp.dict()))
+    return SourceGet.model_validate(Source.create(session=db.session, **source_inp.dict()))
 
 
 @source.get("/{id}", response_model=SourceGet)
@@ -40,7 +40,7 @@ async def get_source(id: int) -> SourceGet:
     :param id: Айди источника
     :return: SourceGet - полученный источник
     """
-    return SourceGet.from_orm(Source.get(id, session=db.session))
+    return SourceGet.model_validate(Source.get(id, session=db.session))
 
 
 @source.get("", response_model=list[SourceGet])
@@ -49,7 +49,8 @@ async def get_sources() -> list[SourceGet]:
     Получить все источники данных
     :return: list[SourceGet] - список источников данных
     """
-    return parse_obj_as(list[SourceGet], Source.query(session=db.session).all())
+    type_adapter = TypeAdapter(list[SourceGet])
+    return type_adapter.validate_python(Source.query(session=db.session).all())
 
 
 @source.patch("/{id}", response_model=SourceGet)
@@ -67,7 +68,7 @@ async def patch_source(
     :param _: Аутентификация
     :return: SourceGet - обновленный источник данных
     """
-    return SourceGet.from_orm(Source.update(id, session=db.session, **source_inp.dict(exclude_unset=True)))
+    return SourceGet.model_validate(Source.update(id, session=db.session, **source_inp.dict(exclude_unset=True)))
 
 
 @source.delete("/{id}", response_model=StatusResponseModel)
