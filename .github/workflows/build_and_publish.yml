@@ -88,6 +88,7 @@ jobs:
             --network=web \
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env ROOT_PATH='/userdata' \
+            --env AUTH_URL='https://api.test.profcomff.com/auth' \
             --env GUNICORN_CMD_ARGS='--log-config logging_test.conf' \
             --name ${{ env.API_CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:test
@@ -150,6 +151,7 @@ jobs:
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env ROOT_PATH='/userdata' \
             --env GUNICORN_CMD_ARGS='--log-config  logging_prod.conf' \
+            --env AUTH_URL='https://api.profcomff.com/auth' \
             --name ${{ env.API_CONTAINER_NAME }} \
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
