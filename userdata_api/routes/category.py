@@ -21,6 +21,7 @@ async def create_category(
     _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.create"], allow_none=False, auto_error=True)),
 ) -> CategoryGet:
     """
+    Hello_world!
     Создать категорию пользовательских данных. Получить категорию можно будет со скоупами, имена которых в category_inp.scopes
     Ручка обновит документацию
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
