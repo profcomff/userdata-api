@@ -12,12 +12,12 @@ from userdata_api.utils.user import patch_user_info as patch
 user = APIRouter(prefix="/user", tags=["User"])
 
 
-@user.get("/{id}", response_model=UserInfoGet)
+@user.get("/{id}", response_model=UserInfoGet, description='Получить информацию о пользователе')
 async def get_user_info(
     id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
 ) -> UserInfoGet:
     """
-    Получить информацию о польщователе
+    Получить информацию о пользователе
     :param id: Айди овнера информации(пользователя)
     :param user: Аутентфикация
     :return: Словарь, ключи - категории на которые хватило прав(овнеру не нужны права, он получает всё).
@@ -32,7 +32,26 @@ async def get_user_info(
     return UserInfoGet.model_validate(await get(id, user))
 
 
-@user.post("/{id}", response_model=StatusResponseModel)
+@user.post("/{id}", response_model=StatusResponseModel,
+           description= 'Обновить информацию о пользователе.\n\n'
+                        'Объект - пользователь, информацию которого обновляют\n\n'
+                        'Субъект - пользователь, который обновляет - источник\n\n'
+                        '\n\n'
+                        'Если не указать параметр внутри категории, то ничего не обновится, если указать что-то,'
+                        'то либо создастся новая запись(в случае, если она отсутствовала у данного источника),'
+                        ' либо отредактируется'
+                        'старая. Если в значении параметра указан None,'
+                        ' то соответствующая информациия удаляется из данного источника'
+                        '\n\n'
+                        'Обновлять через эту ручку можно только от имени источников admin и user.\n\n'
+                        'Чтобы обновить от имени админиа, надо иметь скоуп `userdata.info.admin`\n\n'
+                        'Чтобы обновить неизменяемую информацию надо обладать скоупом `userdata.info.update`\n\n'
+                        'Для обновления своей информации(источник `user`) не нужны скоупы на обновление '
+                        'соответствующих категорий\n\n'
+                        'Для обновления чужой информации от имени админа(источник  `admin`)'
+                        'нужны скоупы на обновление всех указанных в теле запроса категорий'
+                        ' пользовательских данных данных'
+           )
 async def update_user(
     new_info: UserInfoUpdate,
     id: int,

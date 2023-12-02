@@ -14,7 +14,9 @@ from userdata_api.schemas.response_model import StatusResponseModel
 param = APIRouter(prefix="/category/{category_id}/param", tags=["Param"])
 
 
-@param.post("", response_model=ParamGet)
+@param.post("", response_model=ParamGet,
+            description='Создать поле внутри категории. '
+                        'Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}')
 async def create_param(
     request: Request,
     category_id: int,
@@ -35,7 +37,7 @@ async def create_param(
     return ParamGet.model_validate(Param.create(session=db.session, **param_inp.dict(), category_id=category_id))
 
 
-@param.get("/{id}", response_model=ParamGet)
+@param.get("/{id}", response_model=ParamGet, description='Получить параметр по айди')
 async def get_param(id: int, category_id: int) -> ParamGet:
     """
     Получить параметр по айди
@@ -49,7 +51,7 @@ async def get_param(id: int, category_id: int) -> ParamGet:
     return ParamGet.model_validate(res)
 
 
-@param.get("", response_model=list[ParamGet])
+@param.get("", response_model=list[ParamGet], description='Получить все параметры категории')
 async def get_params(category_id: int) -> list[ParamGet]:
     """
     Получить все параметры категории
@@ -60,7 +62,7 @@ async def get_params(category_id: int) -> list[ParamGet]:
     return type_adapter.validate_python(Param.query(session=db.session).filter(Param.category_id == category_id).all())
 
 
-@param.patch("/{id}", response_model=ParamGet)
+@param.patch("/{id}", response_model=ParamGet, description='Обновить параметр внутри категории')
 async def patch_param(
     request: Request,
     id: int,
@@ -86,7 +88,7 @@ async def patch_param(
     return ParamGet.model_validate(Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True)))
 
 
-@param.delete("/{id}", response_model=StatusResponseModel)
+@param.delete("/{id}", response_model=StatusResponseModel, description='Удалить параметр внутри категории')
 async def delete_param(
     request: Request,
     id: int,
