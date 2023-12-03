@@ -63,8 +63,8 @@ async def get_category(id: int) -> CategoryGet:
 )
 async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> list[CategoryGet]:
     """
-        Получить все категории
-        """
+    Получить все категории
+    """
     #
     """
     :param query: Лист query параметров.

@@ -35,9 +35,7 @@ async def get_user_info(
     return UserInfoGet.model_validate(await get(id, user))
 
 
-@user.post(
-    "/{id}",
-    response_model=StatusResponseModel)
+@user.post("/{id}", response_model=StatusResponseModel)
 async def update_user(
     new_info: UserInfoUpdate,
     id: int,
