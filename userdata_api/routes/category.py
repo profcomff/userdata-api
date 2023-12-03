@@ -14,11 +14,13 @@ from userdata_api.schemas.response_model import StatusResponseModel
 category = APIRouter(prefix="/category", tags=["Category"])
 
 
-@category.post("", response_model=CategoryGet,
-               description='Создать категорию пользовательских данных. Получить категорию можно будет со скоупами,'
-                           ' имена которых в category_inp.scopes.\n\n'  # Используем символ перевода строки
-                           'Ручка обновит документацию')
-
+@category.post(
+    "",
+    response_model=CategoryGet,
+    description='Создать категорию пользовательских данных. Получить категорию можно будет со скоупами,'
+    ' имена которых в category_inp.scopes.\n\n'  # Используем символ перевода строки
+    'Ручка обновит документацию',
+)
 async def create_category(
     request: Request,
     category_inp: CategoryPost,
@@ -50,8 +52,9 @@ async def get_category(id: int) -> CategoryGet:
     return CategoryGet.model_validate(category)
 
 
-@category.get("", response_model=list[CategoryGet], response_model_exclude_none=True,
-              description='Получить все категории')
+@category.get(
+    "", response_model=list[CategoryGet], response_model_exclude_none=True, description='Получить все категории'
+)
 async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> list[CategoryGet]:
     result = []
     for category in Category.query(session=db.session).all():

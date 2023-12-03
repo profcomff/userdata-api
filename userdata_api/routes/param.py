@@ -14,9 +14,13 @@ from userdata_api.schemas.response_model import StatusResponseModel
 param = APIRouter(prefix="/category/{category_id}/param", tags=["Param"])
 
 
-@param.post("", response_model=ParamGet,
-            description='Создать поле внутри категории. '
-                        'Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}')
+@param.post(
+    "",
+    response_model=ParamGet,
+    description='Создать поле внутри категории. '
+    'Ответ на пользовательские данные будет такой {..., category: {...,param: '
+    ', ...}}',
+)
 async def create_param(
     request: Request,
     category_id: int,
