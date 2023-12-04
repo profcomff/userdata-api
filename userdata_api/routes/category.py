@@ -29,9 +29,7 @@ async def create_category(
     """
     Создать категорию пользовательских данных. Получить категорию можно будет со скоупами, имена которых в category_inp.scopes
     Ручка обновит документацию
-    """
-    #
-    """
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param category_inp: Принимаемая моделька
     :param _: Аутентификация
@@ -47,9 +45,7 @@ async def create_category(
 async def get_category(id: int) -> CategoryGet:
     """
     Получить категорию
-    """
-    #
-    """
+    \f
     :param id: Айди категории
     :param _: Аутентфикация
     :return: Категорию со списком скоупов, которые нужны для получения пользовательских данных этой категории
@@ -64,9 +60,7 @@ async def get_category(id: int) -> CategoryGet:
 async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> list[CategoryGet]:
     """
     Получить все категории
-    """
-    #
-    """
+    \f
     :param query: Лист query параметров.
     Если ничего не указано то вернет просто список категорий
     Параметр 'param' - если указан, то в каждой категории будет список ее параметров
@@ -95,9 +89,7 @@ async def patch_category(
 ) -> CategoryGet:
     """
     Обновить категорию
-    """
-    #
-    """
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемой категории
     :param category_inp: Моделька обновления
@@ -116,9 +108,7 @@ async def delete_category(
 ) -> StatusResponseModel:
     """
     Удалить категорию
-    """
-    #
-    """
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемой категории
     :param _: Аутентификация

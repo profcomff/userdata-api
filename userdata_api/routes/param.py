@@ -29,9 +29,7 @@ async def create_param(
 ) -> ParamGet:
     """
     Создать поле внутри категории. Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}
-    """
-    #
-    """
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param category_id: Айди котегории в которой создавать параметр
     :param param_inp: Модель для создания
@@ -48,9 +46,7 @@ async def create_param(
 async def get_param(id: int, category_id: int) -> ParamGet:
     """
     Получить параметр по айди
-    """
-    #
-    """
+    \f
     :param id: Айди параметра
     :param category_id: айди категории в которой этот параметр находиится
     :return: ParamGet - полученный параметр
@@ -65,9 +61,7 @@ async def get_param(id: int, category_id: int) -> ParamGet:
 async def get_params(category_id: int) -> list[ParamGet]:
     """
     Получить все параметры категории
-    """
-    #
-    """
+    \f
     :param category_id: Айди категории
     :return: list[ParamGet] - список полученных параметров
     """
@@ -85,9 +79,7 @@ async def patch_param(
 ) -> ParamGet:
     """
     Обновить параметр внутри категории
-    """
-    #
-    """
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемого параметра
     :param category_id: Адйи категории в которой находится параметр
@@ -113,9 +105,7 @@ async def delete_param(
 ) -> StatusResponseModel:
     """
     Удалить параметр внутри категории
-    """
-    #
-    """
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемого параметра
     :param category_id: Айди категории в которой находится удлаляемый параметр
