@@ -17,9 +17,6 @@ category = APIRouter(prefix="/category", tags=["Category"])
 @category.post(
     "",
     response_model=CategoryGet,
-    description='Создать категорию пользовательских данных. Получить категорию можно будет со скоупами,'
-    ' имена которых в category_inp.scopes.\n\n'  # Используем символ перевода строки
-    'Ручка обновит документацию',
 )
 async def create_category(
     request: Request,
@@ -41,7 +38,7 @@ async def create_category(
     return CategoryGet.model_validate(category)
 
 
-@category.get("/{id}", response_model=CategoryGet, description='Получить категорию')
+@category.get("/{id}", response_model=CategoryGet)
 async def get_category(id: int) -> CategoryGet:
     """
     Получить категорию
@@ -54,9 +51,7 @@ async def get_category(id: int) -> CategoryGet:
     return CategoryGet.model_validate(category)
 
 
-@category.get(
-    "", response_model=list[CategoryGet], response_model_exclude_none=True, description='Получить все категории'
-)
+@category.get("", response_model=list[CategoryGet], response_model_exclude_none=True)
 async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> list[CategoryGet]:
     """
     Получить все категории
@@ -80,7 +75,7 @@ async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> l
     return type_adapter.validate_python(result)
 
 
-@category.patch("/{id}", response_model=CategoryGet, description='Обновить категорию')
+@category.patch("/{id}", response_model=CategoryGet)
 async def patch_category(
     request: Request,
     id: int,
@@ -100,7 +95,7 @@ async def patch_category(
     return CategoryGet.model_validate(Category.update(id, session=db.session, **category_inp.dict(exclude_unset=True)))
 
 
-@category.delete("/{id}", response_model=StatusResponseModel, description='Удалить категорию')
+@category.delete("/{id}", response_model=StatusResponseModel)
 async def delete_category(
     request: Request,
     id: int,

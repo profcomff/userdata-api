@@ -14,7 +14,7 @@ from userdata_api.schemas.source import SourceGet, SourcePatch, SourcePost
 source = APIRouter(prefix="/source", tags=["Source"])
 
 
-@source.post("", response_model=SourceGet, description="Создать источник данных")
+@source.post("", response_model=SourceGet)
 async def create_source(
     request: Request,
     source_inp: SourcePost,
@@ -34,7 +34,7 @@ async def create_source(
     return SourceGet.model_validate(Source.create(session=db.session, **source_inp.dict()))
 
 
-@source.get("/{id}", response_model=SourceGet, description="Получить источник данных")
+@source.get("/{id}", response_model=SourceGet)
 async def get_source(id: int) -> SourceGet:
     """
     Получить источник данных
@@ -45,7 +45,7 @@ async def get_source(id: int) -> SourceGet:
     return SourceGet.model_validate(Source.get(id, session=db.session))
 
 
-@source.get("", response_model=list[SourceGet], description='Получить все источники данных')
+@source.get("", response_model=list[SourceGet])
 async def get_sources() -> list[SourceGet]:
     """
     Получить все источники данных
@@ -56,7 +56,7 @@ async def get_sources() -> list[SourceGet]:
     return type_adapter.validate_python(Source.query(session=db.session).all())
 
 
-@source.patch("/{id}", response_model=SourceGet, description='Обновить источник данных')
+@source.patch("/{id}", response_model=SourceGet)
 async def patch_source(
     request: Request,
     id: int,
@@ -75,7 +75,7 @@ async def patch_source(
     return SourceGet.model_validate(Source.update(id, session=db.session, **source_inp.dict(exclude_unset=True)))
 
 
-@source.delete("/{id}", response_model=StatusResponseModel, description='Удалить источник данных')
+@source.delete("/{id}", response_model=StatusResponseModel)
 async def delete_source(
     request: Request,
     id: int,

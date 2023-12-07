@@ -12,7 +12,7 @@ from userdata_api.utils.user import patch_user_info as patch
 user = APIRouter(prefix="/user", tags=["User"])
 
 
-@user.get("/{id}", response_model=UserInfoGet, description='Получить информацию о пользователе')
+@user.get("/{id}", response_model=UserInfoGet)
 async def get_user_info(
     id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
 ) -> UserInfoGet:
