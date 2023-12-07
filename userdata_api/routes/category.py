@@ -14,7 +14,10 @@ from userdata_api.schemas.response_model import StatusResponseModel
 category = APIRouter(prefix="/category", tags=["Category"])
 
 
-@category.post("", response_model=CategoryGet)
+@category.post(
+    "",
+    response_model=CategoryGet,
+)
 async def create_category(
     request: Request,
     category_inp: CategoryPost,
@@ -23,6 +26,7 @@ async def create_category(
     """
     Создать категорию пользовательских данных. Получить категорию можно будет со скоупами, имена которых в category_inp.scopes
     Ручка обновит документацию
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param category_inp: Принимаемая моделька
     :param _: Аутентификация
@@ -38,6 +42,7 @@ async def create_category(
 async def get_category(id: int) -> CategoryGet:
     """
     Получить категорию
+    \f
     :param id: Айди категории
     :param _: Аутентфикация
     :return: Категорию со списком скоупов, которые нужны для получения пользовательских данных этой категории
@@ -48,6 +53,15 @@ async def get_category(id: int) -> CategoryGet:
 
 @category.get("", response_model=list[CategoryGet], response_model_exclude_none=True)
 async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> list[CategoryGet]:
+    """
+    Получить все категории
+    \f
+    :param query: Лист query параметров.
+    Если ничего не указано то вернет просто список категорий
+    Параметр 'param' - если указан, то в каждой категории будет список ее параметров
+    :param _: Аутентифиуация
+    :return: Список категорий. В каждой ноде списка - информация о скоупах, которые нужны для получения пользовательских данных этой категории
+    """
     result = []
     for category in Category.query(session=db.session).all():
         to_append = category.dict()
@@ -56,14 +70,7 @@ async def get_categories(query: list[Literal["param"]] = Query(default=[])) -> l
             for param in category.params:
                 to_append["params"].append(param.dict())
         result.append(to_append)
-    """
-    Получить все категории
-    :param query: Лист query параметров.
-    Если ничего не указано то вернет просто список категорий
-    Параметр 'param' - если указан, то в каждой категории будет список ее параметров
-    :param _: Аутентифиуация
-    :return: Список категорий. В каждой ноде списка - информация о скоупах, которые нужны для получения пользовательских данных этой категории
-    """
+
     type_adapter = TypeAdapter(list[CategoryGet])
     return type_adapter.validate_python(result)
 
@@ -77,6 +84,7 @@ async def patch_category(
 ) -> CategoryGet:
     """
     Обновить категорию
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемой категории
     :param category_inp: Моделька обновления
@@ -95,6 +103,7 @@ async def delete_category(
 ) -> StatusResponseModel:
     """
     Удалить категорию
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемой категории
     :param _: Аутентификация

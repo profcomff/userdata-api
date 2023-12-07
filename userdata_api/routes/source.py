@@ -22,6 +22,7 @@ async def create_source(
 ) -> SourceGet:
     """
     Создать источник данных
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param source_inp: Моделька для создания
     :param _: Аутентификация
@@ -37,6 +38,7 @@ async def create_source(
 async def get_source(id: int) -> SourceGet:
     """
     Получить источник данных
+    \f
     :param id: Айди источника
     :return: SourceGet - полученный источник
     """
@@ -47,6 +49,7 @@ async def get_source(id: int) -> SourceGet:
 async def get_sources() -> list[SourceGet]:
     """
     Получить все источники данных
+    \f
     :return: list[SourceGet] - список источников данных
     """
     type_adapter = TypeAdapter(list[SourceGet])
@@ -62,6 +65,7 @@ async def patch_source(
 ) -> SourceGet:
     """
     Обновить источник данных
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемого источника
     :param source_inp: Моделька для обновления
@@ -79,6 +83,7 @@ async def delete_source(
 ) -> StatusResponseModel:
     """
     Удалить источник данных
+    \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемого источника
     :param _: Аутентфиикация
