@@ -59,7 +59,7 @@ async def get_param(
         user_scopes = set([scope["name"].lower() for scope in _["session_scopes"]])
         if category_scopes - user_scopes:
             raise ObjectNotFound(Param, id)
-        ParamGet.model_validate(res)
+        return ParamGet.model_validate(res)
     return ParamGet.model_validate(res)
 
 
