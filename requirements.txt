@@ -1,13 +1,13 @@
 alembic
 auth-lib-profcomff[fastapi]
-fastapi
+fastapi==0.100.1
 fastapi-sqlalchemy
 gunicorn
 logging-profcomff
 psycopg2-binary
 pydantic[dotenv]
 SQLAlchemy
-uvicorn
+uvicorn==0.23.1
 pydantic-settings
 event_schema_profcomff
 confluent_kafka
