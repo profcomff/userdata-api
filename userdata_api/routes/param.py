@@ -10,6 +10,7 @@ from userdata_api.models.db import Category, Param
 from userdata_api.schemas.param import ParamGet, ParamPatch, ParamPost
 from userdata_api.schemas.response_model import StatusResponseModel
 
+
 param = APIRouter(prefix="/category/{category_id}/param", tags=["Param"])
 
 
