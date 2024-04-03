@@ -56,6 +56,7 @@ class Param(BaseDbModel):
     Например, параметрами может являться почта и номер телефона,
     а параметры эти могут лежать в категории "контакты"
     """
+
     is_hidden: Mapped[bool] = mapped_column(Boolean, default=True)
     name: Mapped[str] = mapped_column(String)
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey(Category.id))

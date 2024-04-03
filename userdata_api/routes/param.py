@@ -16,10 +16,10 @@ param = APIRouter(prefix="/category/{category_id}/param", tags=["Param"])
 
 @param.post("", response_model=ParamGet)
 async def create_param(
-        request: Request,
-        category_id: int,
-        param_inp: ParamPost,
-        _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.create"], allow_none=False, auto_error=True)),
+    request: Request,
+    category_id: int,
+    param_inp: ParamPost,
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.create"], allow_none=False, auto_error=True)),
 ) -> ParamGet:
     """
     Создать поле внутри категории. Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}
@@ -38,9 +38,9 @@ async def create_param(
 
 @param.get("/{id}", response_model=ParamGet)
 async def get_param(
-        id: int,
-        category_id: int,
-        _: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
+    id: int,
+    category_id: int,
+    _: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> ParamGet:
     """
     Получить параметр по айди
@@ -55,8 +55,9 @@ async def get_param(
     if not res:
         raise ObjectNotFound(Param, id)
     if res.is_hidden:
-        category_scopes = set(Category.query(session=db.session).filter(Category.id == category_id).one_or_none()
-                              .read_scope)
+        category_scopes = set(
+            Category.query(session=db.session).filter(Category.id == category_id).one_or_none().read_scope
+        )
         user_scopes = set([scope["name"].lower() for scope in _["session_scopes"]])
         if category_scopes - user_scopes:
             raise ObjectNotFound(Param, id)
@@ -78,11 +79,11 @@ async def get_params(category_id: int) -> list[ParamGet]:
 
 @param.patch("/{id}", response_model=ParamGet)
 async def patch_param(
-        request: Request,
-        id: int,
-        category_id: int,
-        param_inp: ParamPatch,
-        _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.update"], allow_none=False, auto_error=True)),
+    request: Request,
+    id: int,
+    category_id: int,
+    param_inp: ParamPatch,
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.update"], allow_none=False, auto_error=True)),
 ) -> ParamGet:
     """
     Обновить параметр внутри категории
@@ -105,10 +106,10 @@ async def patch_param(
 
 @param.delete("/{id}", response_model=StatusResponseModel)
 async def delete_param(
-        request: Request,
-        id: int,
-        category_id: int,
-        _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.delete"], allow_none=False, auto_error=True)),
+    request: Request,
+    id: int,
+    category_id: int,
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.delete"], allow_none=False, auto_error=True)),
 ) -> StatusResponseModel:
     """
     Удалить параметр внутри категории
