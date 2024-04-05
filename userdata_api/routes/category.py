@@ -111,4 +111,4 @@ async def delete_category(
     """
     _: Category = Category.get(id, session=db.session)
     Category.delete(id, session=db.session)
-    return StatusResponseModel(status="Success", message="Category deleted")
+    return StatusResponseModel(status="Success", message="Category deleted", ru="Категория удалена")

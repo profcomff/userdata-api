@@ -111,4 +111,4 @@ async def delete_param(
         raise ObjectNotFound(Param, id)
     res.is_deleted = True
     db.session.commit()
-    return StatusResponseModel(status="Success", message="Param deleted")
+    return StatusResponseModel(status="Success", message="Param deleted", ru="Параметр удален")

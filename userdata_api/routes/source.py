@@ -90,4 +90,4 @@ async def delete_source(
     :return: None
     """
     Source.delete(id, session=db.session)
-    return StatusResponseModel(status="Success", message="Source deleted")
+    return StatusResponseModel(status="Success", message="Source deleted", ru="Источник удален")
