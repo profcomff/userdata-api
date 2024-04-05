@@ -1,6 +1,6 @@
 alembic
 auth-lib-profcomff[fastapi]
-fastapi==0.108.0
+fastapi
 fastapi-sqlalchemy
 gunicorn
 logging-profcomff
