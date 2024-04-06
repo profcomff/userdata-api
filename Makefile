@@ -8,9 +8,9 @@ venv:
 	python3.11 -m venv venv
 
 format:
-	autoflake -r --in-place --remove-all-unused-imports ./userdata_api
-	isort ./userdata_api
-	black ./userdata_api
+	source ./venv/bin/activate && autoflake -r --in-place --remove-all-unused-imports ./userdata_api
+	source ./venv/bin/activate && isort ./userdata_api
+	source ./venv/bin/activate && black ./userdata_api
 	source ./venv/bin/activate && autoflake -r --in-place --remove-all-unused-imports ./tests
 	source ./venv/bin/activate && isort ./tests
 	source ./venv/bin/activate && black ./tests
