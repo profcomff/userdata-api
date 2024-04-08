@@ -8,16 +8,16 @@ class UserDataApiError(Exception):
 class ObjectNotFound(UserDataApiError):
     def __init__(self, obj: type, obj_id_or_name: int | str):
         super().__init__(
-            f"Object {obj.__name__} {obj_id_or_name=} not found",
-            f"Объект {obj.__name__} с идиентификатором {obj_id_or_name=} не найден",
+            f"Object {obj.__name__} {obj_id_or_name} not found",
+            f"Объект {obj.__name__} с идиентификатором {obj_id_or_name} не найден",
         )
 
 
 class AlreadyExists(UserDataApiError):
     def __init__(self, obj: type, obj_id_or_name: int | str):
         super().__init__(
-            f"Object {obj.__name__} {obj_id_or_name=} already exists",
-            f"Объект {obj.__name__} с идиентификатором {obj_id_or_name=} уже существует",
+            f"Object {obj.__name__} {obj_id_or_name} already exists",
+            f"Объект {obj.__name__} с идентфикатором {obj_id_or_name} уже существует",
         )
 
 
