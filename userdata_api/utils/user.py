@@ -104,7 +104,6 @@ async def get_user_info(
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
     """
-    print(additional_data)
     infos: list[Info] = (
         Info.query(session=db.session)
         .join(Param)
@@ -122,8 +121,6 @@ async def get_user_info(
         )
         .all()
     )
-    for info in infos:
-        print(f'category{info.category.id}.param{info.param.id}')
     if not infos:
         raise ObjectNotFound(Info, user_id)
     scope_names = [scope["name"] for scope in user["session_scopes"]]
