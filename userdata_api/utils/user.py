@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi_sqlalchemy import db
-from sqlalchemy import not_
+from sqlalchemy import String, cast, func, not_, or_
 
 from userdata_api.exceptions import Forbidden, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
@@ -90,7 +90,9 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             continue
 
 
-async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
+async def get_user_info(
+    user_id: int, user: dict[str, int | list[dict[str, str | int]]], additional_data: list[str]
+) -> UserInfoGet:
     """
     Возвращает информауию о пользователе в соотетствии с переданным токеном.
 
@@ -102,13 +104,26 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
     """
+    print(additional_data)
     infos: list[Info] = (
         Info.query(session=db.session)
         .join(Param)
         .join(Category)
-        .filter(Info.owner_id == user_id, not_(Param.is_deleted), not_(Category.is_deleted))
+        .filter(
+            Info.owner_id == user_id,
+            not_(Param.is_deleted),
+            not_(Category.is_deleted),
+            or_(
+                Param.visible_in_user_response,
+                func.concat('category', cast(Category.id, String), '.param', cast(Param.id, String)).in_(
+                    additional_data
+                ),
+            ),
+        )
         .all()
     )
+    for info in infos:
+        print(f'category{info.category.id}.param{info.param.id}')
     if not infos:
         raise ObjectNotFound(Info, user_id)
     scope_names = [scope["name"] for scope in user["session_scopes"]]
