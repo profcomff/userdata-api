@@ -100,7 +100,7 @@ jobs:
           docker run \
             --detach \
             --restart always \
-            --network=web \
+            --network=kafka \
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env KAFKA_DSN='${{ secrets.KAFKA_DSN }}' \
             --env KAFKA_LOGIN='${{ secrets.KAFKA_LOGIN }}' \
@@ -162,7 +162,7 @@ jobs:
           docker run \
             --detach \
             --restart always \
-            --network=web \
+            --network=kafka \
             --env DB_DSN='${{ secrets.DB_DSN }}' \
             --env KAFKA_DSN='${{ secrets.KAFKA_DSN }}' \
             --env KAFKA_LOGIN='${{ secrets.KAFKA_LOGIN }}' \
