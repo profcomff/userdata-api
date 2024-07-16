@@ -107,7 +107,7 @@ async def delete_category(
 ) -> StatusResponseModel:
     """
     Удалить категорию
-    
+
     Scopes: `["userdata.category.delete"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/

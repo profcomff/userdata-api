@@ -87,7 +87,7 @@ async def delete_source(
 ) -> StatusResponseModel:
     """
     Удалить источник данных
-    
+
     Scopes: `["userdata.source.delete"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
