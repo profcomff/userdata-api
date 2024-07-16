@@ -21,7 +21,8 @@ async def create_source(
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.source.create"], allow_none=False, auto_error=True)),
 ) -> SourceGet:
     """
-    Создать источник данных
+    Создать источник данных\n
+    Scopes: `["userdata.source.create"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param source_inp: Моделька для создания
@@ -64,7 +65,8 @@ async def patch_source(
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.source.update"], allow_none=False, auto_error=True)),
 ) -> SourceGet:
     """
-    Обновить источник данных
+    Обновить источник данных\n
+    Scopes: `["userdata.source.update"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемого источника
@@ -82,7 +84,8 @@ async def delete_source(
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.source.delete"], allow_none=False, auto_error=True)),
 ) -> StatusResponseModel:
     """
-    Удалить источник данных
+    Удалить источник данных\n
+    Scopes: `["userdata.source.delete"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемого источника

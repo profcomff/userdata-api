@@ -22,7 +22,8 @@ async def create_param(
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.create"], allow_none=False, auto_error=True)),
 ) -> ParamGet:
     """
-    Создать поле внутри категории. Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}
+    Создать поле внутри категории. Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}\n
+    Scopes: `["userdata.param.create"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param category_id: Айди котегории в которой создавать параметр
@@ -72,7 +73,8 @@ async def patch_param(
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.update"], allow_none=False, auto_error=True)),
 ) -> ParamGet:
     """
-    Обновить параметр внутри категории
+    Обновить параметр внутри категории\n
+    Scopes: `["userdata.param.update"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемого параметра
@@ -98,7 +100,8 @@ async def delete_param(
     _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.delete"], allow_none=False, auto_error=True)),
 ) -> StatusResponseModel:
     """
-    Удалить параметр внутри категории
+    Удалить параметр внутри категории\n
+    Scopes: `["userdata.param.delete"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемого параметра
