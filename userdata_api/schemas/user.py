@@ -23,6 +23,9 @@ class UserInfoGet(Base):
             raise ValueError("Category list is not unique")
         return v
 
+class UsersInfoGet(Base):
+    users: dict[int, list[int]] | None = None
 
+    
 class UserInfoUpdate(UserInfoGet):
     source: constr(min_length=1)
