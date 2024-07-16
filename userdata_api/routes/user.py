@@ -10,7 +10,6 @@ from userdata_api.utils.user import get_user_info as get
 from userdata_api.utils.user import get_users_ids_by_category
 from userdata_api.utils.user import patch_user_info as patch
 
-
 user = APIRouter(prefix="/user", tags=["User"])
 
 

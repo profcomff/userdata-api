@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from fastapi_sqlalchemy import db
 from sqlalchemy import not_
-
 from userdata_api.exceptions import Forbidden, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
