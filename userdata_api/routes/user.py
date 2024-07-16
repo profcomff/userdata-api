@@ -85,13 +85,14 @@ async def get_users_info(
     required_users = []
     if users is None and categories is None:
         required_users = db.session.query(Info.owner_id).distinct().all()
-    else:
+    if users:
         for user_id in users:
-            required_users_users.append(user_id)
+            required_users.append(user_id)
+    if categories:
         for category in categories:
-            category_users_ids = get_users_ids_by_category(category, user)
-            required_users_users.extend(category_users_ids)
-        required_users_users = list(set(required_users_users))
+            category_users_ids = await get_users_ids_by_category(category, user)
+            required_users.extend(category_users_ids)
+    required_users = list(set(required_users))
     for user_id in required_users:
         result[user_id] = await get_user_info(user_id, user)
     return UsersInfoGet(users=result)
