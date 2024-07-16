@@ -25,7 +25,8 @@ async def create_category(
 ) -> CategoryGet:
     """
     Создать категорию пользовательских данных. Получить категорию можно будет со скоупами, имена которых в category_inp.scopes
-    Ручка обновит документацию\n
+    Ручка обновит документацию
+
     Scopes: `["userdata.category.create"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -84,7 +85,8 @@ async def patch_category(
     _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.update"], allow_none=False, auto_error=True)),
 ) -> CategoryGet:
     """
-    Обновить категорию\n
+    Обновить категорию
+
     Scopes: `["userdata.category.update"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
@@ -104,7 +106,8 @@ async def delete_category(
     _: dict[str, str] = Depends(UnionAuth(scopes=["userdata.category.delete"], allow_none=False, auto_error=True)),
 ) -> StatusResponseModel:
     """
-    Удалить категорию\n
+    Удалить категорию
+    
     Scopes: `["userdata.category.delete"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
