@@ -229,5 +229,4 @@ async def get_users_info(
                 "value": info.value,
             }
         )
-    print(result)
     return UsersInfoGet(users=result)
