@@ -23,6 +23,8 @@ async def create_param(
 ) -> ParamGet:
     """
     Создать поле внутри категории. Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}
+
+    Scopes: `["userdata.param.create"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param category_id: Айди котегории в которой создавать параметр
@@ -73,6 +75,8 @@ async def patch_param(
 ) -> ParamGet:
     """
     Обновить параметр внутри категории
+
+    Scopes: `["userdata.param.update"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемого параметра
@@ -99,6 +103,8 @@ async def delete_param(
 ) -> StatusResponseModel:
     """
     Удалить параметр внутри категории
+
+    Scopes: `["userdata.param.delete"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемого параметра
