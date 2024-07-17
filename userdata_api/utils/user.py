@@ -5,7 +5,7 @@ from sqlalchemy import not_
 
 from userdata_api.exceptions import Forbidden, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
-from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
+from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
 
 
 async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> None:
@@ -68,7 +68,10 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             db.session.query(Info)
             .join(Source)
             .filter(
-                Info.param_id == param.id, Info.owner_id == user_id, Source.name == new.source, not_(Info.is_deleted)
+                Info.param_id == param.id,
+                Info.owner_id == user_id,
+                Source.name == new.source,
+                not_(Info.is_deleted),
             )
             .one_or_none()
         )
@@ -181,8 +184,70 @@ async def get_user_info(
     for item in param_dict.values():
         if isinstance(item, list):
             result.extend(
-                [{"category": _item.category.name, "param": _item.param.name, "value": _item.value} for _item in item]
+                [
+                    {
+                        "category": _item.category.name,
+                        "param": _item.param.name,
+                        "value": _item.value,
+                    }
+                    for _item in item
+                ]
             )
         else:
-            result.append({"category": item.category.name, "param": item.param.name, "value": item.value})
+            result.append(
+                {
+                    "category": item.category.name,
+                    "param": item.param.name,
+                    "value": item.value,
+                }
+            )
     return UserInfoGet(items=result)
+
+
+async def get_users_info(
+    users: list[int],
+    categories: list[str],
+    user: dict[str, int | list[dict[str, str | int]]],
+) -> UsersInfoGet:
+    """
+    Возвращает информацию о данных пользователей в указанных категориях
+
+    :param users: Список айди юзеров
+    :param categories: Список необходимых категорий
+    :param user: Сессия выполняющего запрос данных
+    :return: Словарь, где ключи - айди юзеров, значение - словарь данных, как в get_user_info
+    """
+    scope_names = [scope["name"] for scope in user["session_scopes"]]
+    infos: list[Info] = (
+        Info.query(session=db.session)
+        .join(Param)
+        .join(Category)
+        .filter(
+            Info.owner_id.in_(users),
+            Param.category_id.in_(
+                Category.query(session=db.session).filter(Category.name.in_(categories)).with_entities(Category.id)
+            ),
+            not_(Param.is_deleted),
+            not_(Category.is_deleted),
+            not_(Info.is_deleted),
+        )
+        .all()
+    )
+    if not infos:
+        raise ObjectNotFound(Info, users)
+    result = {}
+    for info in infos:
+        if info.owner_id not in result:
+
+            result[info.owner_id] = {"items": []}
+        if info.category.read_scope and info.category.read_scope not in scope_names and user["id"] != info.owner_id:
+            continue
+        result[info.owner_id]["items"].append(
+            {
+                "category": info.category.name,
+                "param": info.param.name,
+                "value": info.value,
+            }
+        )
+    print(result)
+    return UsersInfoGet(users=result)

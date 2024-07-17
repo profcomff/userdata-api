@@ -8,6 +8,7 @@ from userdata_api.models.db import Category, Info
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
 from userdata_api.utils.user import get_user_info as get
+from userdata_api.utils.user import get_users_info as get_users
 from userdata_api.utils.user import patch_user_info as patch
 
 
@@ -16,7 +17,8 @@ user = APIRouter(prefix="/user", tags=["User"])
 
 @user.get("/{id}", response_model=UserInfoGet)
 async def get_user_info(
-    id: int, user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True))
+    id: int,
+    user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> UserInfoGet:
     """
     Получить информацию о пользователе
@@ -65,13 +67,22 @@ async def update_user(
     :return:
     """
     await patch(new_info, id, user)
+<<<<<<< Updated upstream
     return StatusResponseModel(status='Success', message='User patch succeeded', ru="Изменение успешно")
+=======
+    return StatusResponseModel(status="Success", message="User patch succeeded", ru="Изменение успешно")
+>>>>>>> Stashed changes
 
 
 @user.get("", response_model=UsersInfoGet, response_model_exclude_unset=True)
 async def get_users_info(
+<<<<<<< Updated upstream
     users: list[int] = Query(None),
     categories: list[str] = Query(None),
+=======
+    users: list[int] = Query(),
+    categories: list[str] = Query(),
+>>>>>>> Stashed changes
     user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
 ) -> UsersInfoGet:
     """
@@ -82,7 +93,11 @@ async def get_users_info(
     :return: словарь, где ключь - id пользователя, значение - информация.
     Например: {users: {1: {}, 2: {}}}
     """
+<<<<<<< Updated upstream
     result = {}
     for user_id in users:
         result[user_id] = await get(user_id, user, categories)
     return UsersInfoGet(users=result)
+=======
+    return UsersInfoGet.model_validate(await get_users(users, categories, user))
+>>>>>>> Stashed changes
