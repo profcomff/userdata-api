@@ -25,7 +25,7 @@ class UserInfoGet(Base):
 
 
 class UsersInfoGet(Base):
-    users: dict[int, list[int]] | None = None
+    users: dict[int, UserInfoGet] | None = None
 
 
 class UserInfoUpdate(UserInfoGet):

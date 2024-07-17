@@ -101,7 +101,7 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             continue
 
 
-async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
+async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]], categories: list[str] | None = None) -> UserInfoGet:
     """
     Возвращает информауию о пользователе в соотетствии с переданным токеном.
 
@@ -111,15 +111,25 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
 
     :param user_id: Айди пользователя
     :param user: Сессия выполняющего запрос данных
+    :param categories: Список категорий, которые нужно вернуть(если не указать, вернутся все)
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
     """
-    infos: list[Info] = (
-        Info.query(session=db.session)
-        .join(Param)
-        .join(Category)
-        .filter(Info.owner_id == user_id, not_(Param.is_deleted), not_(Category.is_deleted))
-        .all()
-    )
+    if categories:
+        infos: list[Info] = (
+            Info.query(session=db.session)
+            .join(Param)
+            .join(Category)
+            .filter(Info.owner_id == user_id, Param.category_id.in_(Category.query(session=db.session).filter(Category.name.in_(categories)).with_entities(Category.id)), not_(Param.is_deleted), not_(Category.is_deleted), not_(Info.is_deleted))
+            .all()
+        )
+    else:
+        infos: list[Info] = (
+            Info.query(session=db.session)
+            .join(Param)
+            .join(Category)
+            .filter(Info.owner_id == user_id, not_(Param.is_deleted), not_(Category.is_deleted))
+            .all()
+        )
     if not infos:
         raise ObjectNotFound(Info, user_id)
     scope_names = [scope["name"] for scope in user["session_scopes"]]
@@ -165,26 +175,3 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         else:
             result.append({"category": item.category.name, "param": item.param.name, "value": item.value})
     return UserInfoGet(items=result)
-
-
-async def get_users_ids_by_category(category_name: str, user: dict[str, int | list[dict[str, str | int]]]) -> list[int]:
-    """
-    Возврщает список id всех юзеров в данной категории
-    :param category_name: Название категории
-    :param user: Сессия выполняющего запрос данных
-    :return: Лист айди юзеров в этой категории
-    """
-    scope_names = [scope["name"] for scope in user["session_scopes"]]
-    category = Category.query(session=db.session).filter(Category.name == category_name).one_or_none()
-    if not category:
-        raise ObjectNotFound(Category, category_name)
-    if category.read_scope and category.read_scope not in scope_names:
-        raise Forbidden(f"Reading category {category_name} requires {category.read_scope} scope")
-    user_ids = (
-        db.session.query(Info.owner_id)
-        .join(Param)
-        .filter(Param.category_id == category.id, not_(Param.is_deleted), not_(Info.is_deleted))
-        .distinct()
-        .all()
-    )
-    return [user_id for user_id in user_ids]

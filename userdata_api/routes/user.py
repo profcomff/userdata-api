@@ -3,11 +3,10 @@ from typing import Any
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Query
 from fastapi_sqlalchemy import db
-from userdata_api.models.db import Info
+from userdata_api.models.db import Info, Category
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
 from userdata_api.utils.user import get_user_info as get
-from userdata_api.utils.user import get_users_ids_by_category
 from userdata_api.utils.user import patch_user_info as patch
 
 user = APIRouter(prefix="/user", tags=["User"])
@@ -82,17 +81,6 @@ async def get_users_info(
     Например: {users: {1: {}, 2: {}}}
     """
     result = {}
-    required_users = []
-    if users is None and categories is None:
-        required_users = db.session.query(Info.owner_id).distinct().all()
-    if users:
-        for user_id in users:
-            required_users.append(user_id)
-    if categories:
-        for category in categories:
-            category_users_ids = await get_users_ids_by_category(category, user)
-            required_users.extend(category_users_ids)
-    required_users = list(set(required_users))
-    for user_id in required_users:
-        result[user_id] = await get_user_info(user_id, user)
-    return UsersInfoGet(users=result)
+    for user_id in users:
+        result[user_id] = await get(user_id, user, categories)
+    return UsersInfoGet(result)
