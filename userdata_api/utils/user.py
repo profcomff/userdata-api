@@ -105,9 +105,7 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             continue
 
 
-async def get_user_info(
-    user_id: int, user: dict[str, int | list[dict[str, str | int]]], categories: list[str] | None = None
-) -> UserInfoGet:
+async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
     """
     Возвращает информауию о пользователе в соотетствии с переданным токеном.
 
@@ -117,33 +115,15 @@ async def get_user_info(
 
     :param user_id: Айди пользователя
     :param user: Сессия выполняющего запрос данных
-    :param categories: Список категорий, которые нужно вернуть(если не указать, вернутся все)
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
     """
-    if categories:
-        infos: list[Info] = (
-            Info.query(session=db.session)
-            .join(Param)
-            .join(Category)
-            .filter(
-                Info.owner_id == user_id,
-                Param.category_id.in_(
-                    Category.query(session=db.session).filter(Category.name.in_(categories)).with_entities(Category.id)
-                ),
-                not_(Param.is_deleted),
-                not_(Category.is_deleted),
-                not_(Info.is_deleted),
-            )
-            .all()
-        )
-    else:
-        infos: list[Info] = (
-            Info.query(session=db.session)
-            .join(Param)
-            .join(Category)
-            .filter(Info.owner_id == user_id, not_(Param.is_deleted), not_(Category.is_deleted))
-            .all()
-        )
+    infos: list[Info] = (
+        Info.query(session=db.session)
+        .join(Param)
+        .join(Category)
+        .filter(Info.owner_id == user_id, not_(Param.is_deleted), not_(Category.is_deleted))
+        .all()
+    )
     if not infos:
         raise ObjectNotFound(Info, user_id)
     scope_names = [scope["name"] for scope in user["session_scopes"]]
