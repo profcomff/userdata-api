@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi_sqlalchemy import db
 from sqlalchemy import not_
+
 from userdata_api.exceptions import Forbidden, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate
@@ -101,7 +102,9 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             continue
 
 
-async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]], categories: list[str] | None = None) -> UserInfoGet:
+async def get_user_info(
+    user_id: int, user: dict[str, int | list[dict[str, str | int]]], categories: list[str] | None = None
+) -> UserInfoGet:
     """
     Возвращает информауию о пользователе в соотетствии с переданным токеном.
 
@@ -119,7 +122,15 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
             Info.query(session=db.session)
             .join(Param)
             .join(Category)
-            .filter(Info.owner_id == user_id, Param.category_id.in_(Category.query(session=db.session).filter(Category.name.in_(categories)).with_entities(Category.id)), not_(Param.is_deleted), not_(Category.is_deleted), not_(Info.is_deleted))
+            .filter(
+                Info.owner_id == user_id,
+                Param.category_id.in_(
+                    Category.query(session=db.session).filter(Category.name.in_(categories)).with_entities(Category.id)
+                ),
+                not_(Param.is_deleted),
+                not_(Category.is_deleted),
+                not_(Info.is_deleted),
+            )
             .all()
         )
     else:
