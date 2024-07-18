@@ -37,31 +37,17 @@ async def create_param(
 
 
 @param.get("/{id}", response_model=ParamGet)
-async def get_param(
-    id: int,
-    category_id: int,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
-) -> ParamGet:
+async def get_param(id: int, category_id: int) -> ParamGet:
     """
     Получить параметр по айди
     \f
     :param id: Айди параметра
-    :param category_id: айди категории в которой этот параметр находится
+    :param category_id: айди категории в которой этот параметр находиится
     :return: ParamGet - полученный параметр
-    :param _: Аутентификация
     """
-
     res = Param.query(session=db.session).filter(Param.id == id, Param.category_id == category_id).one_or_none()
     if not res:
         raise ObjectNotFound(Param, id)
-    if res.is_hidden:
-        category_scopes = set(
-            Category.query(session=db.session).filter(Category.id == category_id).one_or_none().read_scope
-        )
-        user_scopes = set([scope["name"].lower() for scope in _["session_scopes"]])
-        if category_scopes - user_scopes:
-            raise ObjectNotFound(Param, id)
-        return ParamGet.model_validate(res)
     return ParamGet.model_validate(res)
 
 
