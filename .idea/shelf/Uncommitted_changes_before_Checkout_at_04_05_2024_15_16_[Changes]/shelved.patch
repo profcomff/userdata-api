@@ -1,0 +1,88 @@
+Index: userdata_api/models/db.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from __future__ import annotations\r\n\r\nfrom datetime import datetime\r\nfrom enum import Enum\r\nfrom typing import Final\r\n\r\nfrom sqlalchemy import Boolean, DateTime\r\nfrom sqlalchemy import Enum as DbEnum\r\nfrom sqlalchemy import ForeignKey, Integer, String\r\nfrom sqlalchemy.ext.hybrid import hybrid_property\r\nfrom sqlalchemy.orm import Mapped, mapped_column, relationship\r\n\r\nfrom userdata_api.models.base import BaseDbModel\r\n\r\n\r\nclass ViewType(str, Enum):\r\n    \"\"\"\r\n    Тип отображения пользоватльских данных в ответе `GET /user/{user_id}`\r\n    ALL: {category: {param: [val1, val2, ...]}}\r\n    LAST: {category: {param: last_modified_value}}\r\n    MOST_TRUSTED: {category: {param: most_trusted_value}}\r\n    \"\"\"\r\n\r\n    ALL: Final[str] = \"all\"\r\n    LAST: Final[str] = \"last\"\r\n    MOST_TRUSTED: Final[str] = \"most_trusted\"\r\n\r\n\r\nclass Category(BaseDbModel):\r\n    \"\"\"\r\n    Категория - объеденение параметров пользовательских данных.\r\n    Если параметром может быть, например, номер студенческого и номер профсоюзного,\r\n    то категорией, их объединяющей, может быть \"студенческая информация\" или \"документы\"\r\n    \"\"\"\r\n\r\n    name: Mapped[str] = mapped_column(String)\r\n    read_scope: Mapped[str] = mapped_column(String, nullable=True)\r\n    update_scope: Mapped[str] = mapped_column(String, nullable=True)\r\n    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)\r\n    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)\r\n    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)\r\n\r\n    params: Mapped[list[Param]] = relationship(\r\n        \"Param\",\r\n        foreign_keys=\"Param.category_id\",\r\n        back_populates=\"category\",\r\n        primaryjoin=\"and_(Category.id==Param.category_id, not_(Param.is_deleted))\",\r\n        lazy=\"joined\",\r\n    )\r\n\r\n\r\nclass Param(BaseDbModel):\r\n    \"\"\"\r\n    Параметр - находится внутри категории,\r\n    к нему можно задавать значение у конкретного пользователя.\r\n    Например, параметрами может являться почта и номер телефона,\r\n    а параметры эти могут лежать в категории \"контакты\"\r\n    \"\"\"\r\n\r\n    is_hidden: Mapped[bool] = mapped_column(Boolean, default=True)\r\n    name: Mapped[str] = mapped_column(String)\r\n    category_id: Mapped[int] = mapped_column(Integer, ForeignKey(Category.id))\r\n    is_required: Mapped[bool] = mapped_column(Boolean, default=False)\r\n    changeable: Mapped[bool] = mapped_column(Boolean, default=True)\r\n    type: Mapped[ViewType] = mapped_column(DbEnum(ViewType, native_enum=False))\r\n    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)\r\n    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)\r\n    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)\r\n\r\n    category: Mapped[Category] = relationship(\r\n        \"Category\",\r\n        foreign_keys=\"Param.category_id\",\r\n        back_populates=\"params\",\r\n        primaryjoin=\"and_(Param.category_id==Category.id, not_(Category.is_deleted))\",\r\n        lazy=\"joined\",\r\n    )\r\n\r\n    values: Mapped[list[Info]] = relationship(\r\n        \"Info\",\r\n        foreign_keys=\"Info.param_id\",\r\n        back_populates=\"param\",\r\n        primaryjoin=\"and_(Param.id==Info.param_id, not_(Info.is_deleted))\",\r\n        lazy=\"joined\",\r\n    )\r\n\r\n    @property\r\n    def pytype(self) -> type[str | list[str]]:\r\n        return list[str] if self.type == ViewType.ALL else str\r\n\r\n\r\nclass Source(BaseDbModel):\r\n    \"\"\"\r\n    Источник данных - субъект изменения польщовательских данных - тот, кто меняет данные\r\n    В HTTP методах доступно только два источника - user/admin\r\n    Субъект может менять только данные, созданные собой же.\r\n    У источника есть уровень доверия, который влияет на вид ответа `GET /user/{user_id}`\r\n    \"\"\"\r\n\r\n    name: Mapped[str] = mapped_column(String, unique=True)\r\n    trust_level: Mapped[int] = mapped_column(Integer, default=0, nullable=False)\r\n    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)\r\n    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)\r\n    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)\r\n\r\n    values: Mapped[Info] = relationship(\r\n        \"Info\",\r\n        foreign_keys=\"Info.source_id\",\r\n        back_populates=\"source\",\r\n        primaryjoin=\"and_(Source.id==Info.source_id, not_(Info.is_deleted))\",\r\n        lazy=\"joined\",\r\n    )\r\n\r\n\r\nclass Info(BaseDbModel):\r\n    \"\"\"\r\n    Значения параметров для конкретных польщзователей\r\n    Если, например, телефон - параметр, то здесь указывается его значение для\r\n    польщзователя(owner_id) - объекта изменения пользовательских данных\r\n    \"\"\"\r\n\r\n    param_id: Mapped[int] = mapped_column(Integer, ForeignKey(Param.id))\r\n    source_id: Mapped[int] = mapped_column(Integer, ForeignKey(Source.id))\r\n    owner_id: Mapped[int] = mapped_column(Integer, nullable=False)\r\n    value: Mapped[str] = mapped_column(String, nullable=False)\r\n    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)\r\n    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)\r\n    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)\r\n\r\n    param: Mapped[Param] = relationship(\r\n        \"Param\",\r\n        foreign_keys=\"Info.param_id\",\r\n        back_populates=\"values\",\r\n        primaryjoin=\"and_(Info.param_id==Param.id, not_(Param.is_deleted))\",\r\n        lazy=\"joined\",\r\n    )\r\n\r\n    source: Mapped[Source] = relationship(\r\n        \"Source\",\r\n        foreign_keys=\"Info.source_id\",\r\n        back_populates=\"values\",\r\n        primaryjoin=\"and_(Info.source_id==Source.id, not_(Source.is_deleted))\",\r\n        lazy=\"joined\",\r\n    )\r\n\r\n    @hybrid_property\r\n    def category(self) -> Category:\r\n        return self.param.category\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/userdata_api/models/db.py b/userdata_api/models/db.py
+--- a/userdata_api/models/db.py	
++++ b/userdata_api/models/db.py	
+@@ -57,7 +57,7 @@
+     а параметры эти могут лежать в категории "контакты"
+     """
+ 
+-    is_hidden: Mapped[bool] = mapped_column(Boolean, default=True)
++    visible_in_user_response: Mapped[bool] = mapped_column(Boolean, default=False)
+     name: Mapped[str] = mapped_column(String)
+     category_id: Mapped[int] = mapped_column(Integer, ForeignKey(Category.id))
+     is_required: Mapped[bool] = mapped_column(Boolean, default=False)
+Index: userdata_api/routes/param.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from typing import Any\r\n\r\nfrom auth_lib.fastapi import UnionAuth\r\nfrom fastapi import APIRouter, Depends, Request\r\nfrom fastapi_sqlalchemy import db\r\nfrom pydantic.type_adapter import TypeAdapter\r\n\r\nfrom userdata_api.exceptions import AlreadyExists, ObjectNotFound\r\nfrom userdata_api.models.db import Category, Param\r\nfrom userdata_api.schemas.param import ParamGet, ParamPatch, ParamPost\r\nfrom userdata_api.schemas.response_model import StatusResponseModel\r\n\r\n\r\nparam = APIRouter(prefix=\"/category/{category_id}/param\", tags=[\"Param\"])\r\n\r\n\r\n@param.post(\"\", response_model=ParamGet)\r\nasync def create_param(\r\n    request: Request,\r\n    category_id: int,\r\n    param_inp: ParamPost,\r\n    _: dict[str, Any] = Depends(UnionAuth(scopes=[\"userdata.param.create\"], allow_none=False, auto_error=True)),\r\n) -> ParamGet:\r\n    \"\"\"\r\n    Создать поле внутри категории. Ответ на пользовательские данные будет такой {..., category: {...,param: '', ...}}\r\n    \\f\r\n    :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/\r\n    :param category_id: Айди котегории в которой создавать параметр\r\n    :param param_inp: Модель для создания\r\n    :param _: Аутентификация\r\n    :return: ParamGet - созданный параметр\r\n    \"\"\"\r\n    Category.get(category_id, session=db.session)\r\n    if Param.query(session=db.session).filter(Param.category_id == category_id, Param.name == param_inp.name).all():\r\n        raise AlreadyExists(Param, param_inp.name)\r\n    return ParamGet.model_validate(Param.create(session=db.session, **param_inp.dict(), category_id=category_id))\r\n\r\n\r\n@param.get(\"/{id}\", response_model=ParamGet)\r\nasync def get_param(\r\n    id: int,\r\n    category_id: int,\r\n    _: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),\r\n) -> ParamGet:\r\n    \"\"\"\r\n    Получить параметр по айди\r\n    \\f\r\n    :param id: Айди параметра\r\n    :param category_id: айди категории в которой этот параметр находится\r\n    :return: ParamGet - полученный параметр\r\n    :param _: Аутентификация\r\n    \"\"\"\r\n\r\n    res = Param.query(session=db.session).filter(Param.id == id, Param.category_id == category_id).one_or_none()\r\n    if not res:\r\n        raise ObjectNotFound(Param, id)\r\n    if res.is_hidden:\r\n        category_scopes = set(\r\n            Category.query(session=db.session).filter(Category.id == category_id).one_or_none().read_scope\r\n        )\r\n        user_scopes = set([scope[\"name\"].lower() for scope in _[\"session_scopes\"]])\r\n        if category_scopes - user_scopes:\r\n            raise ObjectNotFound(Param, id)\r\n        return ParamGet.model_validate(res)\r\n    return ParamGet.model_validate(res)\r\n\r\n\r\n@param.get(\"\", response_model=list[ParamGet])\r\nasync def get_params(category_id: int) -> list[ParamGet]:\r\n    \"\"\"\r\n    Получить все параметры категории\r\n    \\f\r\n    :param category_id: Айди категории\r\n    :return: list[ParamGet] - список полученных параметров\r\n    \"\"\"\r\n    type_adapter = TypeAdapter(list[ParamGet])\r\n    return type_adapter.validate_python(Param.query(session=db.session).filter(Param.category_id == category_id).all())\r\n\r\n\r\n@param.patch(\"/{id}\", response_model=ParamGet)\r\nasync def patch_param(\r\n    request: Request,\r\n    id: int,\r\n    category_id: int,\r\n    param_inp: ParamPatch,\r\n    _: dict[str, Any] = Depends(UnionAuth(scopes=[\"userdata.param.update\"], allow_none=False, auto_error=True)),\r\n) -> ParamGet:\r\n    \"\"\"\r\n    Обновить параметр внутри категории\r\n    \\f\r\n    :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/\r\n    :param id: Айди обновляемого параметра\r\n    :param category_id: Адйи категории в которой находится параметр\r\n    :param param_inp: Модель для создания параметра\r\n    :param _: Аутентификация\r\n    :return: ParamGet- Обновленный параметр\r\n    \"\"\"\r\n    if category_id:\r\n        Category.get(category_id, session=db.session)\r\n    if category_id:\r\n        return ParamGet.from_orm(\r\n            Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True), category_id=category_id)\r\n        )\r\n    return ParamGet.model_validate(Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True)))\r\n\r\n\r\n@param.delete(\"/{id}\", response_model=StatusResponseModel)\r\nasync def delete_param(\r\n    request: Request,\r\n    id: int,\r\n    category_id: int,\r\n    _: dict[str, Any] = Depends(UnionAuth(scopes=[\"userdata.param.delete\"], allow_none=False, auto_error=True)),\r\n) -> StatusResponseModel:\r\n    \"\"\"\r\n    Удалить параметр внутри категории\r\n    \\f\r\n    :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/\r\n    :param id: Айди удаляемого параметра\r\n    :param category_id: Айди категории в которой находится удлаляемый параметр\r\n    :param _: Аутентификация\r\n    :return: None\r\n    \"\"\"\r\n    res: Param = Param.query(session=db.session).filter(Param.id == id, Param.category_id == category_id).one_or_none()\r\n    if not res:\r\n        raise ObjectNotFound(Param, id)\r\n    res.is_deleted = True\r\n    db.session.commit()\r\n    return StatusResponseModel(status=\"Success\", message=\"Param deleted\")\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/userdata_api/routes/param.py b/userdata_api/routes/param.py
+--- a/userdata_api/routes/param.py	
++++ b/userdata_api/routes/param.py	
+@@ -37,32 +37,7 @@
+ 
+ 
+ @param.get("/{id}", response_model=ParamGet)
+-async def get_param(
+-    id: int,
+-    category_id: int,
+-    _: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
+-) -> ParamGet:
+-    """
+-    Получить параметр по айди
+-    \f
+-    :param id: Айди параметра
+-    :param category_id: айди категории в которой этот параметр находится
+-    :return: ParamGet - полученный параметр
+-    :param _: Аутентификация
+-    """
+ 
+-    res = Param.query(session=db.session).filter(Param.id == id, Param.category_id == category_id).one_or_none()
+-    if not res:
+-        raise ObjectNotFound(Param, id)
+-    if res.is_hidden:
+-        category_scopes = set(
+-            Category.query(session=db.session).filter(Category.id == category_id).one_or_none().read_scope
+-        )
+-        user_scopes = set([scope["name"].lower() for scope in _["session_scopes"]])
+-        if category_scopes - user_scopes:
+-            raise ObjectNotFound(Param, id)
+-        return ParamGet.model_validate(res)
+-    return ParamGet.model_validate(res)
+ 
+ 
+ @param.get("", response_model=list[ParamGet])
+Index: requirements.txt
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>alembic\r\nauth-lib-profcomff[fastapi]\r\nfastapi==0.100.1\r\nfastapi-sqlalchemy\r\ngunicorn\r\nlogging-profcomff\r\npsycopg2-binary\r\npydantic[dotenv]\r\nSQLAlchemy\r\nuvicorn==0.23.1\r\npydantic-settings\r\nevent_schema_profcomff\r\nconfluent_kafka\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/requirements.txt b/requirements.txt
+--- a/requirements.txt	
++++ b/requirements.txt	
+@@ -1,13 +1,13 @@
+ alembic
+ auth-lib-profcomff[fastapi]
+-fastapi==0.100.1
++fastapi
+ fastapi-sqlalchemy
+ gunicorn
+ logging-profcomff
+ psycopg2-binary
+ pydantic[dotenv]
+ SQLAlchemy
+-uvicorn==0.23.1
++uvicorn
+ pydantic-settings
+ event_schema_profcomff
+ confluent_kafka
