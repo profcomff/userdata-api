@@ -73,15 +73,14 @@ async def update_user(
 @user.get("", response_model=UsersInfoGet, response_model_exclude_unset=True)
 async def get_users_info(
     users: list[int] = Query(),
-    categories: list[str] = Query(),
+    categories: list[int] = Query(),
     user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
 ) -> UsersInfoGet:
     """
     Получить информацию о пользователях.
-    Если не указать users и categories, то вернется информация обо всех пользователях
     :param users: список id юзеров, про которых нужно вернуть информацию
-    :param categories: список категорий, про юзеров принажделащих которым  нужно вернуть информацию
-    :return: словарь, где ключь - id пользователя, значение - информация.
+    :param categories: список id категорий, параметры которых нужно вернуть
+    :return: словарь, где ключ - id пользователя, значение - информация.
     Например: {users: {1: {}, 2: {}}}
     """
     return UsersInfoGet.model_validate(await get_users(users, categories, user))

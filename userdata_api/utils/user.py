@@ -185,15 +185,15 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
 
 
 async def get_users_info(
-    users: list[int],
-    categories: list[str],
+    user_ids: list[int],
+    category_ids: list[int],
     user: dict[str, int | list[dict[str, str | int]]],
 ) -> UsersInfoGet:
     """
     Возвращает информацию о данных пользователей в указанных категориях
 
-    :param users: Список айди юзеров
-    :param categories: Список необходимых категорий
+    :param user_ids: Список айди юзеров
+    :param category_ids: Список айди необходимых категорий
     :param user: Сессия выполняющего запрос данных
     :return: Словарь, где ключи - айди юзеров, значение - словарь данных, как в get_user_info
     """
@@ -203,10 +203,8 @@ async def get_users_info(
         .join(Param)
         .join(Category)
         .filter(
-            Info.owner_id.in_(users),
-            Param.category_id.in_(
-                Category.query(session=db.session).filter(Category.name.in_(categories)).with_entities(Category.id)
-            ),
+            Info.owner_id.in_(user_ids),
+            Param.category_id.in_(category_ids),
             not_(Param.is_deleted),
             not_(Category.is_deleted),
             not_(Info.is_deleted),
@@ -214,13 +212,13 @@ async def get_users_info(
         .all()
     )
     if not infos:
-        raise ObjectNotFound(Info, users)
+        raise ObjectNotFound(Info, user_ids)
     result = {}
     for info in infos:
         if info.owner_id not in result:
 
             result[info.owner_id] = {"items": []}
-        if info.category.read_scope and info.category.read_scope not in scope_names and user["id"] != info.owner_id:
+        if info.category.read_scope and info.category.read_scope not in scope_names:
             continue
         result[info.owner_id]["items"].append(
             {
