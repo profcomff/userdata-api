@@ -1,7 +1,7 @@
 import starlette
 from starlette.responses import JSONResponse
 
-from ..exceptions import AlreadyExists, Forbidden, ObjectNotFound
+from ..exceptions import AlreadyExists, Forbidden, InvalidArgument, ObjectNotFound
 from ..schemas.response_model import StatusResponseModel
 from .base import app
 
@@ -24,4 +24,11 @@ async def forbidden_handler(req: starlette.requests.Request, exc: Forbidden):
 async def already_exists_handler(req: starlette.requests.Request, exc: AlreadyExists):
     return JSONResponse(
         content=StatusResponseModel(status="Already exists", message=exc.en, ru=exc.ru).model_dump(), status_code=409
+    )
+
+
+@app.exception_handler(InvalidArgument)
+async def already_exists_handler(req: starlette.requests.Request, exc: InvalidArgument):
+    return JSONResponse(
+        content=StatusResponseModel(status="Invalid argument", message=exc.en, ru=exc.ru).model_dump(), status_code=422
     )

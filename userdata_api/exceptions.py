@@ -21,5 +21,13 @@ class AlreadyExists(UserDataApiError):
         )
 
 
+class InvalidArgument(UserDataApiError):
+    def __init__(self, obj: type, field_name: str):
+        super().__init__(
+            f"Invalid argument for field {field_name} in object {obj.__name__}",
+            f"Некорректный аргумент для поля {field_name} в объекте {obj.__name__} ",
+        )
+
+
 class Forbidden(UserDataApiError):
     pass
