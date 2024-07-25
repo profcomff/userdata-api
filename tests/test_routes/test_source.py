@@ -18,6 +18,8 @@ def test_create(client, dbsession):
     assert response.json()["name"] == q.name == name
     assert response.json()["trust_level"] == q.trust_level == 8
     assert response.json()["id"] == q.id
+    dbsession.delete(q)
+    dbsession.flush()
 
 
 @pytest.mark.authenticated()
