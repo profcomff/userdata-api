@@ -34,17 +34,17 @@ def test_get(client, dbsession, category_no_scopes, source):
     dbsession.commit()
     response = client.get(f"/user", params={"users": [0, 1], "categories": [category1.id, category2.id, category3.id]})
     assert response.status_code == 200
-    assert {"category": category1.name, "param": info2.param.name, "value": info2.value} in list(
-        response.json()["users"]["1"]["items"]
+    assert {"user_id": 1, "category": category1.name, "param": info2.param.name, "value": info2.value} in list(
+        response.json()["items"]
     )
-    assert {"category": category3.name, "param": info4.param.name, "value": info4.value} in list(
-        response.json()["users"]["1"]["items"]
+    assert {"user_id": 1, "category": category3.name, "param": info4.param.name, "value": info4.value} in list(
+        response.json()["items"]
     )
-    assert {"category": category1.name, "param": info1.param.name, "value": info1.value} in list(
-        response.json()["users"]["0"]["items"]
+    assert {"user_id": 0, "category": category1.name, "param": info1.param.name, "value": info1.value} in list(
+        response.json()["items"]
     )
-    assert {"category": category2.name, "param": info3.param.name, "value": info3.value} in list(
-        response.json()["users"]["0"]["items"]
+    assert {"user_id": 0, "category": category2.name, "param": info3.param.name, "value": info3.value} in list(
+        response.json()["items"]
     )
     dbsession.delete(info1)
     dbsession.delete(info2)
@@ -74,19 +74,21 @@ def test_get_some_users(client, dbsession, category_no_scopes, source):
     dbsession.commit()
     response = client.get(f"/user", params={"users": [1, 2], "categories": [category1.id]})
     assert response.status_code == 200
-    assert len(response.json()["users"]) == 2
-    assert {"category": category1.name, "param": param1.name, "value": info1.value} in list(
-        response.json()["users"]["1"]["items"]
+    assert len(list(response.json()["items"])) == 2
+    assert {"user_id": 1, "category": category1.name, "param": param1.name, "value": info1.value} in list(
+        response.json()["items"]
     )
-    assert {"category": category1.name, "param": param1.name, "value": info2.value} in list(
-        response.json()["users"]["2"]["items"]
+    assert {"user_id": 2, "category": category1.name, "param": param1.name, "value": info2.value} in list(
+        response.json()["items"]
     )
-    assert not "3" in list(response.json()["users"].keys())
+    assert {"user_id": 3, "category": category1.name, "param": param1.name, "value": info3.value} not in list(
+        response.json()["items"]
+    )
     response = client.get(f"/user", params={"users": [3], "categories": [category1.id]})
     assert response.status_code == 200
-    assert len(response.json()["users"]) == 1
-    assert {"category": category1.name, "param": param1.name, "value": info3.value} in list(
-        response.json()["users"]["3"]["items"]
+    assert len(response.json()["items"]) == 1
+    assert {"user_id": 3, "category": category1.name, "param": param1.name, "value": info3.value} in list(
+        response.json()["items"]
     )
     dbsession.delete(info1)
     dbsession.delete(info2)
@@ -120,20 +122,19 @@ def test_get_some_categories(client, dbsession, category_no_scopes, source):
     dbsession.commit()
     response = client.get(f"/user", params={"users": [1], "categories": [category1.id, category2.id]})
     assert response.status_code == 200
-    assert {"category": category1.name, "param": info1.param.name, "value": info1.value} in list(
-        response.json()["users"]["1"]["items"]
+    assert {"user_id": 1, "category": category1.name, "param": info1.param.name, "value": info1.value} in list(
+        response.json()["items"]
     )
-    assert {"category": category2.name, "param": info2.param.name, "value": info2.value} in list(
-        response.json()["users"]["1"]["items"]
+    assert {"user_id": 1, "category": category2.name, "param": info2.param.name, "value": info2.value} in list(
+        response.json()["items"]
     )
-    assert not (
-        {"category": category3.name, "param": info3.param.name, "value": info3.value}
-        in list(response.json()["users"]["1"]["items"])
+    assert {"user_id": 1, "category": category3.name, "param": info3.param.name, "value": info3.value} not in list(
+        response.json()["items"]
     )
 
     response = client.get(f"/user", params={"users": [1], "categories": [category3.id]})
-    assert {"category": category3.name, "param": info3.param.name, "value": info3.value} in list(
-        response.json()["users"]["1"]["items"]
+    assert {"user_id": 1, "category": category3.name, "param": info3.param.name, "value": info3.value} in list(
+        response.json()["items"]
     )
 
     dbsession.delete(info1)

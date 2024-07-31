@@ -9,6 +9,13 @@ class UserInfo(Base):
     value: str | None = None
 
 
+class ExtendedUserInfo(Base):
+    user_id: int
+    category: str
+    param: str
+    value: str | None = None
+
+
 class UserInfoGet(Base):
     items: list[UserInfo]
 
@@ -25,7 +32,7 @@ class UserInfoGet(Base):
 
 
 class UsersInfoGet(Base):
-    users: dict[int, UserInfoGet] | None = None
+    items: list[ExtendedUserInfo]
 
 
 class UserInfoUpdate(UserInfoGet):

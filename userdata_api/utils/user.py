@@ -213,18 +213,16 @@ async def get_users_info(
     )
     if not infos:
         raise ObjectNotFound(Info, user_ids)
-    result = {}
+    result = []
     for info in infos:
-        if info.owner_id not in result:
-
-            result[info.owner_id] = {"items": []}
         if info.category.read_scope and info.category.read_scope not in scope_names:
             continue
-        result[info.owner_id]["items"].append(
+        result.append(
             {
+                "user_id": info.owner_id,
                 "category": info.category.name,
                 "param": info.param.name,
                 "value": info.value,
             }
         )
-    return UsersInfoGet(users=result)
+    return UsersInfoGet(items=result)
