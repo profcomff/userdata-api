@@ -2,7 +2,7 @@ from time import sleep
 
 import pytest
 
-from userdata_api.models.db import *
+from userdata_api.models.db import Info, Param
 from userdata_api.utils.utils import random_string
 
 
