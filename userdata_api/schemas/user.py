@@ -9,11 +9,9 @@ class UserInfo(Base):
     value: str | None = None
 
 
-class ExtendedUserInfo(Base):
+class ExtendedUserInfo(UserInfo):
     user_id: int
-    category: str
-    param: str
-    value: str | None = None
+
 
 
 class UserInfoGet(Base):

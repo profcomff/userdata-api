@@ -79,6 +79,10 @@ def test_get_a_few(client, dbsession, category_no_scopes, source):
     dbsession.delete(param2)
     dbsession.delete(param3)
     dbsession.delete(param4)
+    dbsession.flush()
+    dbsession.delete(category1)
+    dbsession.delete(category2)
+    dbsession.delete(category3)
     dbsession.commit()
 
 
@@ -147,6 +151,10 @@ def test_get_a_few_with_trust_level(client, dbsession, category_no_scopes, sourc
     dbsession.delete(param2)
     dbsession.delete(param3)
     dbsession.delete(param4)
+    dbsession.flush()
+    dbsession.delete(category1)
+    dbsession.delete(category2)
+    dbsession.delete(category3)
     dbsession.commit()
 
 
@@ -181,4 +189,6 @@ def test_get_last_most_trusted(client, dbsession, category_no_scopes, source):
     dbsession.delete(info4)
     dbsession.flush()
     dbsession.delete(param1)
+    dbsession.flush()
+    dbsession.delete(category1)
     dbsession.commit()

@@ -99,52 +99,66 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             info.value = item.value
             db.session.flush()
             continue
+
         if item.value is None:
             info.is_deleted = True
             db.session.flush()
             continue
 
+async def get_users_info(
+    user_ids: list[int],
+    category_ids: list[int] | None,
+    user: dict[str, int | list[dict[str, str | int]]]
+) -> list[dict]:
+    """.
+    Возвращает информацию о данных пользователей в указанных категориях
 
-async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
-    """
-    Возвращает информауию о пользователе в соотетствии с переданным токеном.
-
-    Пользователь может прочитать любую информацию о себе
-
-    Токен с доступом к read_scope категории может получить доступ к данным категории у любых пользователей
-
-    :param user_id: Айди пользователя
+    :param user_ids: Список айди юзеров
+    :param category_ids: Список айди необходимых категорий, если None, то мы запрашиваем информацию только обо одном пользователе user_ids[0] обо всех досутпных категориях
     :param user: Сессия выполняющего запрос данных
-    :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у польщователя
+    :return: Список словарей содержащих id пользователя(только если берем информацию о нескольких пользователях), категорию, параметр категории и значение этого параметра у пользователя
     """
-    infos: list[Info] = (
+    is_single_user = category_ids is None
+    scope_names = [scope["name"] for scope in user["session_scopes"]]
+    param_dict: dict[Param, list[Info] | Info | None] = {}
+    query: list[Info] = (
         Info.query(session=db.session)
         .join(Param)
         .join(Category)
-        .filter(Info.owner_id == user_id, not_(Param.is_deleted), not_(Category.is_deleted))
-        .all()
+        .filter(
+            Info.owner_id.in_(user_ids),
+            not_(Param.is_deleted),
+            not_(Category.is_deleted),
+            not_(Info.is_deleted),
+        )
     )
+    if not is_single_user:
+        query = query.filter(Param.category_id.in_(category_ids))
+    infos = query.all()
     if not infos:
-        raise ObjectNotFound(Info, user_id)
-    scope_names = [scope["name"] for scope in user["session_scopes"]]
-    param_dict: dict[Param, list[Info] | Info | None] = {}
+        raise ObjectNotFound(Info, user_ids)
+    result = []
     for info in infos:
-        ## Проверка доступов - нужен либо скоуп на категориию либо нужно быть овнером информации
-        if info.category.read_scope and info.category.read_scope not in scope_names and user["id"] != user_id:
+        is_many_values = info.param.pytype == list[str]
+        if (
+            info.category.read_scope
+            and info.category.read_scope not in scope_names
+            and (info.owner_id != user_ids[0] if is_single_user else True)
+        ):
             continue
-        if info.param not in param_dict.keys():
-            param_dict[info.param] = [] if info.param.pytype == list[str] else None
+        if (info.param, info.owner_id)  not in param_dict.keys():
+            param_dict[(info.param, info.owner_id)] = [] if is_many_values else None
         if info.param.type == ViewType.ALL:
-            param_dict[info.param].append(info)
-        elif (param_dict[info.param] is None) or (
-            (info.param.type == ViewType.LAST and info.create_ts > param_dict[info.param].create_ts)
+            param_dict[(info.param, info.owner_id)].append(info)
+        elif (param_dict[(info.param,info.owner_id)] is None) or (
+            (info.param.type == ViewType.LAST and info.create_ts > param_dict[(info.param,info.owner_id)].create_ts)
             or (
                 info.param.type == ViewType.MOST_TRUSTED
                 and (
-                    param_dict[info.param].source.trust_level < info.source.trust_level
+                    param_dict[(info.param,info.owner_id)].source.trust_level < info.source.trust_level
                     or (
-                        param_dict[info.param].source.trust_level <= info.source.trust_level
-                        and info.create_ts > param_dict[info.param].create_ts
+                        param_dict[(info.param,info.owner_id)].source.trust_level <= info.source.trust_level
+                        and info.create_ts > param_dict[(info.param,info.owner_id)].create_ts
                     )
                 )
             )
@@ -157,72 +171,76 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
             - строго больше индекс доверия/такой же индекс доверия,
             но информация более поздняя по времени
 
+
             Если у параметра отображение по времени то более релевантная - более позднаяя
             """
-            param_dict[info.param] = info
-    result = []
+            param_dict[(info.param,info.owner_id)] = info
+    
     for item in param_dict.values():
         if isinstance(item, list):
             result.extend(
                 [
-                    {
-                        "category": _item.category.name,
-                        "param": _item.param.name,
-                        "value": _item.value,
-                    }
+                    (
+                        {
+                            "user_id": _item.owner_id,
+                            "category": _item.category.name,
+                            "param": _item.param.name,
+                            "value": _item.value,
+                        }
+                        if not is_single_user
+                        else {
+                            "category": _item.category.name,
+                            "param": _item.param.name,
+                            "value": _item.value,
+                        }
+                    )
                     for _item in item
                 ]
             )
         else:
             result.append(
                 {
+                    "user_id": item.owner_id,
                     "category": item.category.name,
                     "param": item.param.name,
                     "value": item.value,
                 }
-            )
-    return UserInfoGet(items=result)
+                if not is_single_user else
+                {
+                    "category": item.category.name,
+                    "param": item.param.name,
+                    "value": item.value,
+                }
+            ) 
+    return result
 
-
-async def get_users_info(
+async def get_users_info_batch(
     user_ids: list[int],
     category_ids: list[int],
-    user: dict[str, int | list[dict[str, str | int]]],
+    user: dict[str, int | list[dict[str, str | int]]]
 ) -> UsersInfoGet:
-    """
+    """.
     Возвращает информацию о данных пользователей в указанных категориях
 
     :param user_ids: Список айди юзеров
     :param category_ids: Список айди необходимых категорий
     :param user: Сессия выполняющего запрос данных
-    :return: Словарь, где ключи - айди юзеров, значение - словарь данных, как в get_user_info
+    :return: Список словарей содержащих id пользователя, категорию, параметр категории и значение этого параметра у пользователя
     """
-    scope_names = [scope["name"] for scope in user["session_scopes"]]
-    infos: list[Info] = (
-        Info.query(session=db.session)
-        .join(Param)
-        .join(Category)
-        .filter(
-            Info.owner_id.in_(user_ids),
-            Param.category_id.in_(category_ids),
-            not_(Param.is_deleted),
-            not_(Category.is_deleted),
-            not_(Info.is_deleted),
-        )
-        .all()
-    )
-    if not infos:
-        raise ObjectNotFound(Info, user_ids)
-    result = []
-    for info in infos:
-        if info.category.read_scope and info.category.read_scope not in scope_names:
-            continue
-        result.append(
-            {
-                "user_id": info.owner_id,
-                "category": info.category.name,
-                "param": info.param.name,
-                "value": info.value,
-            }
-        )
-    return UsersInfoGet(items=result)
+    return UsersInfoGet(items=await get_users_info(user_ids, category_ids, user))
+
+async def get_user_info(
+    user_id: int,
+    user: dict[str, int | list[dict[str, str | int]]]
+) -> UserInfoGet:
+    """Возвращает информауию о пользователе в соотетствии с переданным токеном.
+
+    Пользователь может прочитать любую информацию о себе
+
+    Токен с доступом к read_scope категории может получить доступ к данным категории у любых пользователей
+
+    :param user_id: Айди пользователя
+    :param user: Сессия выполняющего запрос данных
+    :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у пользователя
+    """
+    return UserInfoGet(items= await get_users_info([user_id], None, user))

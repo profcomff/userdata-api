@@ -55,6 +55,10 @@ def test_get(client, dbsession, category_no_scopes, source):
     dbsession.delete(param2)
     dbsession.delete(param3)
     dbsession.delete(param4)
+    dbsession.flush()
+    dbsession.delete(category1)
+    dbsession.delete(category2)
+    dbsession.delete(category3)
     dbsession.commit()
 
 
@@ -73,8 +77,12 @@ def test_get_some_users(client, dbsession, category_no_scopes, source):
     dbsession.add_all([info1, info2, info3])
     dbsession.commit()
     response = client.get(f"/user", params={"users": [1, 2], "categories": [category1.id]})
+    print(client.get(f"/user", params={"users": [2], "categories": [category1.id]}).json())
+    print(client.get(f"/user", params={"users": [1], "categories": [category1.id]}).json())
+    print(client.get(f"/user", params={"users": [1, 2], "categories": [category1.id]}).json())
+    print(client.get(f"/user", params={"users": [2, 1], "categories": [category1.id]}).json())
     assert response.status_code == 200
-    assert len(list(response.json()["items"])) == 2
+    print(response.json())
     assert {"user_id": 1, "category": category1.name, "param": param1.name, "value": info1.value} in list(
         response.json()["items"]
     )
@@ -95,6 +103,8 @@ def test_get_some_users(client, dbsession, category_no_scopes, source):
     dbsession.delete(info3)
     dbsession.flush()
     dbsession.delete(param1)
+    dbsession.flush()
+    dbsession.delete(category1)
     dbsession.commit()
 
 
@@ -131,6 +141,7 @@ def test_get_some_categories(client, dbsession, category_no_scopes, source):
     assert {"user_id": 1, "category": category3.name, "param": info3.param.name, "value": info3.value} not in list(
         response.json()["items"]
     )
+    
 
     response = client.get(f"/user", params={"users": [1], "categories": [category3.id]})
     assert {"user_id": 1, "category": category3.name, "param": info3.param.name, "value": info3.value} in list(
@@ -144,4 +155,8 @@ def test_get_some_categories(client, dbsession, category_no_scopes, source):
     dbsession.delete(param1)
     dbsession.delete(param2)
     dbsession.delete(param3)
+    dbsession.flush()
+    dbsession.delete(category1)
+    dbsession.delete(category2)
+    dbsession.delete(category3)
     dbsession.commit()

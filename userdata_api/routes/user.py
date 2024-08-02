@@ -8,7 +8,7 @@ from userdata_api.models.db import Category, Info
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
 from userdata_api.utils.user import get_user_info as get
-from userdata_api.utils.user import get_users_info as get_users
+from userdata_api.utils.user import get_users_info_batch as get_users
 from userdata_api.utils.user import patch_user_info as patch
 
 
@@ -80,7 +80,6 @@ async def get_users_info(
     Получить информацию о пользователях.
     :param users: список id юзеров, про которых нужно вернуть информацию
     :param categories: список id категорий, параметры которых нужно вернуть
-    :return: словарь, где ключ - id пользователя, значение - информация.
-    Например: {users: {1: {}, 2: {}}}
+    :return: список данных о пользователях и данных категориях в формате {user_id: user_id, category: category_name, param: param_name, value: value}
     """
     return UsersInfoGet.model_validate(await get_users(users, categories, user))
