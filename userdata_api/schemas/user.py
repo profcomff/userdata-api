@@ -13,7 +13,6 @@ class ExtendedUserInfo(UserInfo):
     user_id: int
 
 
-
 class UserInfoGet(Base):
     items: list[UserInfo]
 

@@ -55,7 +55,6 @@ def test_get(client, dbsession, category_no_scopes, source):
     dbsession.delete(param2)
     dbsession.delete(param3)
     dbsession.delete(param4)
-    dbsession.flush()
     dbsession.delete(category1)
     dbsession.delete(category2)
     dbsession.delete(category3)
@@ -103,7 +102,6 @@ def test_get_some_users(client, dbsession, category_no_scopes, source):
     dbsession.delete(info3)
     dbsession.flush()
     dbsession.delete(param1)
-    dbsession.flush()
     dbsession.delete(category1)
     dbsession.commit()
 
@@ -141,7 +139,6 @@ def test_get_some_categories(client, dbsession, category_no_scopes, source):
     assert {"user_id": 1, "category": category3.name, "param": info3.param.name, "value": info3.value} not in list(
         response.json()["items"]
     )
-    
 
     response = client.get(f"/user", params={"users": [1], "categories": [category3.id]})
     assert {"user_id": 1, "category": category3.name, "param": info3.param.name, "value": info3.value} in list(
@@ -155,7 +152,6 @@ def test_get_some_categories(client, dbsession, category_no_scopes, source):
     dbsession.delete(param1)
     dbsession.delete(param2)
     dbsession.delete(param3)
-    dbsession.flush()
     dbsession.delete(category1)
     dbsession.delete(category2)
     dbsession.delete(category3)

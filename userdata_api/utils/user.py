@@ -105,10 +105,9 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             db.session.flush()
             continue
 
+
 async def get_users_info(
-    user_ids: list[int],
-    category_ids: list[int] | None,
-    user: dict[str, int | list[dict[str, str | int]]]
+    user_ids: list[int], category_ids: list[int] | None, user: dict[str, int | list[dict[str, str | int]]]
 ) -> list[dict]:
     """.
     Возвращает информацию о данных пользователей в указанных категориях
@@ -146,19 +145,19 @@ async def get_users_info(
             and (info.owner_id != user_ids[0] if is_single_user else True)
         ):
             continue
-        if (info.param, info.owner_id)  not in param_dict.keys():
+        if (info.param, info.owner_id) not in param_dict.keys():
             param_dict[(info.param, info.owner_id)] = [] if is_many_values else None
         if info.param.type == ViewType.ALL:
             param_dict[(info.param, info.owner_id)].append(info)
-        elif (param_dict[(info.param,info.owner_id)] is None) or (
-            (info.param.type == ViewType.LAST and info.create_ts > param_dict[(info.param,info.owner_id)].create_ts)
+        elif (param_dict[(info.param, info.owner_id)] is None) or (
+            (info.param.type == ViewType.LAST and info.create_ts > param_dict[(info.param, info.owner_id)].create_ts)
             or (
                 info.param.type == ViewType.MOST_TRUSTED
                 and (
-                    param_dict[(info.param,info.owner_id)].source.trust_level < info.source.trust_level
+                    param_dict[(info.param, info.owner_id)].source.trust_level < info.source.trust_level
                     or (
-                        param_dict[(info.param,info.owner_id)].source.trust_level <= info.source.trust_level
-                        and info.create_ts > param_dict[(info.param,info.owner_id)].create_ts
+                        param_dict[(info.param, info.owner_id)].source.trust_level <= info.source.trust_level
+                        and info.create_ts > param_dict[(info.param, info.owner_id)].create_ts
                     )
                 )
             )
@@ -174,8 +173,8 @@ async def get_users_info(
 
             Если у параметра отображение по времени то более релевантная - более позднаяя
             """
-            param_dict[(info.param,info.owner_id)] = info
-    
+            param_dict[(info.param, info.owner_id)] = info
+
     for item in param_dict.values():
         if isinstance(item, list):
             result.extend(
@@ -205,19 +204,18 @@ async def get_users_info(
                     "param": item.param.name,
                     "value": item.value,
                 }
-                if not is_single_user else
-                {
+                if not is_single_user
+                else {
                     "category": item.category.name,
                     "param": item.param.name,
                     "value": item.value,
                 }
-            ) 
+            )
     return result
 
+
 async def get_users_info_batch(
-    user_ids: list[int],
-    category_ids: list[int],
-    user: dict[str, int | list[dict[str, str | int]]]
+    user_ids: list[int], category_ids: list[int], user: dict[str, int | list[dict[str, str | int]]]
 ) -> UsersInfoGet:
     """.
     Возвращает информацию о данных пользователей в указанных категориях
@@ -229,10 +227,8 @@ async def get_users_info_batch(
     """
     return UsersInfoGet(items=await get_users_info(user_ids, category_ids, user))
 
-async def get_user_info(
-    user_id: int,
-    user: dict[str, int | list[dict[str, str | int]]]
-) -> UserInfoGet:
+
+async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
     """Возвращает информауию о пользователе в соотетствии с переданным токеном.
 
     Пользователь может прочитать любую информацию о себе
@@ -243,4 +239,4 @@ async def get_user_info(
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у пользователя
     """
-    return UserInfoGet(items= await get_users_info([user_id], None, user))
+    return UserInfoGet(items=await get_users_info([user_id], None, user))
