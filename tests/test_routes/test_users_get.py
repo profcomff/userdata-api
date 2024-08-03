@@ -55,6 +55,7 @@ def test_get(client, dbsession, category_no_scopes, source):
     dbsession.delete(param2)
     dbsession.delete(param3)
     dbsession.delete(param4)
+    dbsession.flush()
     dbsession.delete(category1)
     dbsession.delete(category2)
     dbsession.delete(category3)
@@ -102,6 +103,7 @@ def test_get_some_users(client, dbsession, category_no_scopes, source):
     dbsession.delete(info3)
     dbsession.flush()
     dbsession.delete(param1)
+    dbsession.flush()
     dbsession.delete(category1)
     dbsession.commit()
 
@@ -152,6 +154,7 @@ def test_get_some_categories(client, dbsession, category_no_scopes, source):
     dbsession.delete(param1)
     dbsession.delete(param2)
     dbsession.delete(param3)
+    dbsession.flush()
     dbsession.delete(category1)
     dbsession.delete(category2)
     dbsession.delete(category3)
