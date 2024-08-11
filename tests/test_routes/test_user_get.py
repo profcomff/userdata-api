@@ -16,6 +16,8 @@ def test_get(client, dbsession, source, info_no_scopes):
     assert info1.category.name == response.json()["items"][0]["category"]
     assert info1.param.name == response.json()["items"][0]["param"]
     assert info1.value == response.json()["items"][0]["value"]
+    dbsession.delete(info1)
+    dbsession.commit()
 
 
 @pytest.mark.authenticated(user_id=1)

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi_sqlalchemy import db
-from sqlalchemy import not_
+from sqlalchemy import not_, or_, and_
 
 from userdata_api.exceptions import Forbidden, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
@@ -138,13 +138,13 @@ async def get_users_info(
         raise ObjectNotFound(Info, user_ids)
     result = []
     for info in infos:
-        is_many_values = info.param.pytype == list[str]
         if (
             info.category.read_scope
             and info.category.read_scope not in scope_names
             and (info.owner_id != user_ids[0] if is_single_user else True)
         ):
-            continue
+            continue  # skip if no read scope
+        is_many_values = info.param.pytype == list[str]
         if (info.param, info.owner_id) not in param_dict.keys():
             param_dict[(info.param, info.owner_id)] = [] if is_many_values else None
         if info.param.type == ViewType.ALL:
@@ -162,19 +162,7 @@ async def get_users_info(
                 )
             )
         ):
-            """
-            Сюда он зайдет либо если параметру не соответствует никакой информации,
-            либо если встретил более релевантную.
-
-            Если у параметра отображение по доверию, то более релевантная
-            - строго больше индекс доверия/такой же индекс доверия,
-            но информация более поздняя по времени
-
-
-            Если у параметра отображение по времени то более релевантная - более позднаяя
-            """
             param_dict[(info.param, info.owner_id)] = info
-
     for item in param_dict.values():
         if isinstance(item, list):
             result.extend(
@@ -212,7 +200,6 @@ async def get_users_info(
                 }
             )
     return result
-
 
 async def get_users_info_batch(
     user_ids: list[int], category_ids: list[int], user: dict[str, int | list[dict[str, str | int]]]
