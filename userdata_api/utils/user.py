@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi_sqlalchemy import db
-from sqlalchemy import not_, or_, and_
+from sqlalchemy import and_, not_, or_
 
 from userdata_api.exceptions import Forbidden, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
@@ -141,7 +141,7 @@ async def get_users_info(
         if (
             info.category.read_scope
             and info.category.read_scope not in scope_names
-            and (info.owner_id != user_ids[0] if is_single_user else True)
+            and (info.owner_id != user["id"] if is_single_user else True)
         ):
             continue  # skip if no read scope
         is_many_values = info.param.pytype == list[str]
@@ -163,43 +163,29 @@ async def get_users_info(
             )
         ):
             param_dict[(info.param, info.owner_id)] = info
+    result_format = lambda _item: {
+        "category": _item.category.name,
+        "param": _item.param.name,
+        "value": _item.value,
+    }
     for item in param_dict.values():
         if isinstance(item, list):
             result.extend(
                 [
                     (
-                        {
-                            "user_id": _item.owner_id,
-                            "category": _item.category.name,
-                            "param": _item.param.name,
-                            "value": _item.value,
-                        }
+                        {**result_format(_item), "user_id": _item.owner_id}
                         if not is_single_user
-                        else {
-                            "category": _item.category.name,
-                            "param": _item.param.name,
-                            "value": _item.value,
-                        }
+                        else result_format(_item)
                     )
                     for _item in item
                 ]
             )
         else:
             result.append(
-                {
-                    "user_id": item.owner_id,
-                    "category": item.category.name,
-                    "param": item.param.name,
-                    "value": item.value,
-                }
-                if not is_single_user
-                else {
-                    "category": item.category.name,
-                    "param": item.param.name,
-                    "value": item.value,
-                }
+                {**result_format(item), "user_id": item.owner_id} if not is_single_user else {**result_format(item)}
             )
     return result
+
 
 async def get_users_info_batch(
     user_ids: list[int], category_ids: list[int], user: dict[str, int | list[dict[str, str | int]]]
