@@ -140,8 +140,8 @@ async def get_users_info(
     for info in infos:
         if (
             info.category.read_scope
-            and (info.owner_id != user["id"] or not is_single_user)
             and info.category.read_scope not in scope_names
+            and (not is_single_user or info.owner_id != user["id"])
         ):
             continue
         if info.param not in param_dict:
