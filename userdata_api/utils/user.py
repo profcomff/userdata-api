@@ -173,16 +173,24 @@ async def get_users_info(
             result.extend(
                 [
                     (
-                        {**result_format(_item), "user_id": _item.owner_id}
-                        if not is_single_user
-                        else result_format(_item)
+                        {
+                            "user_id": _item.owner_id,
+                            "category": _item.category.name,
+                            "param": _item.param.name,
+                            "value": _item.value,
+                        }
                     )
                     for _item in item
                 ]
             )
         else:
             result.append(
-                {**result_format(item), "user_id": item.owner_id} if not is_single_user else {**result_format(item)}
+                {
+                    "user_id": item.owner_id,
+                    "category": item.category.name,
+                    "param": item.param.name,
+                    "value": item.value,
+                }
             )
     return result
 
@@ -212,4 +220,7 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у пользователя
     """
-    return UserInfoGet(items=await get_users_info([user_id], None, user))
+    result = await get_users_info([user_id], None, user)
+    for value in result:
+        del value["user_id"]
+    return UserInfoGet(items=result)
