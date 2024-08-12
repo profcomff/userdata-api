@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi_sqlalchemy import db
-from sqlalchemy import and_, not_, or_
+from sqlalchemy import not_
 
 from userdata_api.exceptions import Forbidden, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
@@ -119,7 +119,7 @@ async def get_users_info(
     """
     is_single_user = category_ids is None
     scope_names = [scope["name"] for scope in user["session_scopes"]]
-    param_dict: dict[Param, list[Info] | Info | None] = {}
+    param_dict: dict[Param, dict[int, list[Info] | Info | None] | None] = {}
     query: list[Info] = (
         Info.query(session=db.session)
         .join(Param)
@@ -141,57 +141,54 @@ async def get_users_info(
         if (
             info.category.read_scope
             and info.category.read_scope not in scope_names
-            and (info.owner_id != user["id"] if is_single_user else True)
+            and (info.owner_id != user["id"] or not is_single_user)
         ):
-            continue  # skip if no read scope
+            continue
         is_many_values = info.param.pytype == list[str]
-        if (info.param, info.owner_id) not in param_dict.keys():
-            param_dict[(info.param, info.owner_id)] = [] if is_many_values else None
+        if info.param not in param_dict:
+            param_dict[info.param] = {}
+        if info.owner_id not in param_dict[info.param]:
+            param_dict[info.param][info.owner_id] = [] if is_many_values else None
         if info.param.type == ViewType.ALL:
-            param_dict[(info.param, info.owner_id)].append(info)
-        elif (param_dict[(info.param, info.owner_id)] is None) or (
-            (info.param.type == ViewType.LAST and info.create_ts > param_dict[(info.param, info.owner_id)].create_ts)
+            param_dict[info.param][info.owner_id].append(info)
+        elif param_dict[info.param][info.owner_id] is None or (
+            (info.param.type == ViewType.LAST and info.create_ts > param_dict[info.param][info.owner_id].create_ts)
             or (
                 info.param.type == ViewType.MOST_TRUSTED
                 and (
-                    param_dict[(info.param, info.owner_id)].source.trust_level < info.source.trust_level
+                    param_dict[info.param][info.owner_id].source.trust_level < info.source.trust_level
                     or (
-                        param_dict[(info.param, info.owner_id)].source.trust_level <= info.source.trust_level
-                        and info.create_ts > param_dict[(info.param, info.owner_id)].create_ts
+                        param_dict[info.param][info.owner_id].source.trust_level <= info.source.trust_level
+                        and info.create_ts > param_dict[info.param][info.owner_id].create_ts
                     )
                 )
             )
         ):
-            param_dict[(info.param, info.owner_id)] = info
-    result_format = lambda _item: {
-        "category": _item.category.name,
-        "param": _item.param.name,
-        "value": _item.value,
-    }
-    for item in param_dict.values():
-        if isinstance(item, list):
-            result.extend(
-                [
-                    (
+            param_dict[info.param][info.owner_id] = info
+    result = []
+    for param, owner_dict in param_dict.items():
+        for owner_id, item in owner_dict.items():
+            if isinstance(item, list):
+                result.extend(
+                    [
                         {
-                            "user_id": _item.owner_id,
+                            "user_id": owner_id,
                             "category": _item.category.name,
-                            "param": _item.param.name,
+                            "param": param.name,
                             "value": _item.value,
                         }
-                    )
-                    for _item in item
-                ]
-            )
-        else:
-            result.append(
-                {
-                    "user_id": item.owner_id,
-                    "category": item.category.name,
-                    "param": item.param.name,
-                    "value": item.value,
-                }
-            )
+                        for _item in item
+                    ]
+                )
+            else:
+                result.append(
+                    {
+                        "user_id": owner_id,
+                        "category": item.category.name,
+                        "param": param.name,
+                        "value": item.value,
+                    }
+                )
     return result
 
 
