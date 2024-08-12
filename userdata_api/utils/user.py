@@ -138,8 +138,10 @@ async def get_users_info(
         raise ObjectNotFound(Info, user_ids)
     result = []
     for info in infos:
-        if info.category.read_scope and (
-            info.owner_id != user["id"] or not is_single_user and info.category.read_scope not in scope_names
+        if (
+            info.category.read_scope
+            and (info.owner_id != user["id"] or not is_single_user)
+            and info.category.read_scope not in scope_names
         ):
             continue
         if info.param not in param_dict:
