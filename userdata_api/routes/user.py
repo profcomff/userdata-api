@@ -80,6 +80,6 @@ async def get_users_info(
     Получить информацию о пользователях.
     :param users: список id юзеров, про которых нужно вернуть информацию
     :param categories: список id категорий, параметры которых нужно вернуть
-    :return: список данных о пользователях и данных категориях в формате {user_id: user_id, category: category_name, param: param_name, value: value}
+    :return: список данных о пользователях и данных категориях
     """
     return UsersInfoGet.model_validate(await get_users(users, categories, user))

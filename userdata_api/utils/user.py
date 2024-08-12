@@ -108,14 +108,14 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
 
 async def get_users_info(
     user_ids: list[int], category_ids: list[int] | None, user: dict[str, int | list[dict[str, str | int]]]
-) -> list[dict]:
+) -> list[dict[str, str | None]]:
     """.
     Возвращает информацию о данных пользователей в указанных категориях
 
     :param user_ids: Список айди юзеров
     :param category_ids: Список айди необходимых категорий, если None, то мы запрашиваем информацию только обо одном пользователе user_ids[0] обо всех досутпных категориях
     :param user: Сессия выполняющего запрос данных
-    :return: Список словарей содержащих id пользователя(только если берем информацию о нескольких пользователях), категорию, параметр категории и значение этого параметра у пользователя
+    :return: Список словарей содержащих id пользователя, категорию, параметр категории и значение этого параметра у пользователя
     """
     is_single_user = category_ids is None
     scope_names = [scope["name"] for scope in user["session_scopes"]]
@@ -138,17 +138,14 @@ async def get_users_info(
         raise ObjectNotFound(Info, user_ids)
     result = []
     for info in infos:
-        if (
-            info.category.read_scope
-            and info.category.read_scope not in scope_names
-            and (info.owner_id != user["id"] or not is_single_user)
+        if info.category.read_scope and (
+            info.owner_id != user["id"] or not is_single_user and info.category.read_scope not in scope_names
         ):
             continue
-        is_many_values = info.param.pytype == list[str]
         if info.param not in param_dict:
             param_dict[info.param] = {}
         if info.owner_id not in param_dict[info.param]:
-            param_dict[info.param][info.owner_id] = [] if is_many_values else None
+            param_dict[info.param][info.owner_id] = [] if info.param.type == ViewType.ALL else None
         if info.param.type == ViewType.ALL:
             param_dict[info.param][info.owner_id].append(info)
         elif param_dict[info.param][info.owner_id] is None or (
@@ -164,10 +161,20 @@ async def get_users_info(
                 )
             )
         ):
+            """
+            Сюда он зайдет либо если параметру не соответствует никакой информации,
+            либо если встретил более релевантную.
+
+            Если у параметра отображение по доверию, то более релевантная
+            - строго больше индекс доверия/такой же индекс доверия,
+            но информация более поздняя по времени
+
+            Если у параметра отображение по времени то более релевантная - более позднаяя
+            """
             param_dict[info.param][info.owner_id] = info
     result = []
-    for param, owner_dict in param_dict.items():
-        for owner_id, item in owner_dict.items():
+    for param, user_dict in param_dict.items():
+        for owner_id, item in user_dict.items():
             if isinstance(item, list):
                 result.extend(
                     [

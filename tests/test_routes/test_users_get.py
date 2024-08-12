@@ -77,12 +77,7 @@ def test_get_some_users(client, dbsession, category_no_scopes, source):
     dbsession.add_all([info1, info2, info3])
     dbsession.commit()
     response = client.get(f"/user", params={"users": [1, 2], "categories": [category1.id]})
-    print(client.get(f"/user", params={"users": [2], "categories": [category1.id]}).json())
-    print(client.get(f"/user", params={"users": [1], "categories": [category1.id]}).json())
-    print(client.get(f"/user", params={"users": [1, 2], "categories": [category1.id]}).json())
-    print(client.get(f"/user", params={"users": [2, 1], "categories": [category1.id]}).json())
     assert response.status_code == 200
-    print(response.json())
     assert {"user_id": 1, "category": category1.name, "param": param1.name, "value": info1.value} in list(
         response.json()["items"]
     )
