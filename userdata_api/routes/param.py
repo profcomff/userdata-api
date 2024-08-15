@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
 from pydantic.type_adapter import TypeAdapter
 
-from userdata_api.exceptions import AlreadyExists, InvalidArgument, ObjectNotFound
+from userdata_api.exceptions import AlreadyExists, InvalidRegex, ObjectNotFound
 from userdata_api.models.db import Category, Param
 from userdata_api.schemas.param import ParamGet, ParamPatch, ParamPost
 from userdata_api.schemas.response_model import StatusResponseModel
@@ -41,7 +41,7 @@ async def create_param(
         try:
             compile(param_inp.validation)
         except ReError:
-            raise InvalidArgument(Param, "validation")
+            raise InvalidRegex(Param, "validation")
     return ParamGet.model_validate(Param.create(session=db.session, **param_inp.dict(), category_id=category_id))
 
 
@@ -98,7 +98,7 @@ async def patch_param(
         try:
             compile(param_inp.validation)
         except ReError:
-            raise InvalidArgument(Param, "validation")
+            raise InvalidRegex(Param, "validation")
     if category_id:
         return ParamGet.from_orm(
             Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True), category_id=category_id)

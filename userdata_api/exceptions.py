@@ -21,11 +21,19 @@ class AlreadyExists(UserDataApiError):
         )
 
 
-class InvalidArgument(UserDataApiError):
+class InvalidValidation(UserDataApiError):
     def __init__(self, obj: type, field_name: str):
         super().__init__(
-            f"Invalid argument for field {field_name} in object {obj.__name__}",
-            f"Некорректный аргумент для поля {field_name} в объекте {obj.__name__} ",
+            f"Invalid validation for field {field_name} in object {obj.__name__}",
+            f"Некорректная валидация для поля {field_name} в объекте {obj.__name__} ",
+        )
+
+
+class InvalidRegex(UserDataApiError):
+    def __init__(self, obj: type, field_name: str):
+        super().__init__(
+            f"Invalid regex for field {field_name} in object {obj.__name__}",
+            f"Некорректное регулярное выражение для поля {field_name} в объекте {obj.__name__} ",
         )
 
 
