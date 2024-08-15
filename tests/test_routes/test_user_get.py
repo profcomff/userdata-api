@@ -16,6 +16,8 @@ def test_get(client, dbsession, source, info_no_scopes):
     assert info1.category.name == response.json()["items"][0]["category"]
     assert info1.param.name == response.json()["items"][0]["param"]
     assert info1.value == response.json()["items"][0]["value"]
+    dbsession.delete(info1)
+    dbsession.commit()
 
 
 @pytest.mark.authenticated(user_id=1)
@@ -26,6 +28,7 @@ def test_get_no_all_scopes(client, dbsession, source, info_no_scopes):
     response = client.get(f"/user/{info1.owner_id}")
     assert response.status_code == 200
     assert info1.category.name not in response.json()
+    dbsession.delete(info1)
     dbsession.commit()
 
 
@@ -79,6 +82,10 @@ def test_get_a_few(client, dbsession, category_no_scopes, source):
     dbsession.delete(param2)
     dbsession.delete(param3)
     dbsession.delete(param4)
+    dbsession.flush()
+    dbsession.delete(category1)
+    dbsession.delete(category2)
+    dbsession.delete(category3)
     dbsession.commit()
 
 
@@ -147,6 +154,10 @@ def test_get_a_few_with_trust_level(client, dbsession, category_no_scopes, sourc
     dbsession.delete(param2)
     dbsession.delete(param3)
     dbsession.delete(param4)
+    dbsession.flush()
+    dbsession.delete(category1)
+    dbsession.delete(category2)
+    dbsession.delete(category3)
     dbsession.commit()
 
 
@@ -181,4 +192,6 @@ def test_get_last_most_trusted(client, dbsession, category_no_scopes, source):
     dbsession.delete(info4)
     dbsession.flush()
     dbsession.delete(param1)
+    dbsession.flush()
+    dbsession.delete(category1)
     dbsession.commit()
