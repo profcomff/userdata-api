@@ -115,9 +115,7 @@ async def get_user_info(
             not_(Category.is_deleted),
             or_(
                 Param.visible_in_user_response,
-                func.concat('category', cast(Category.id, String), '.field', cast(Param.id, String)).in_(
-                    additional_data
-                ),
+                func.concat('Param.', cast(Param.id, String)).in_(additional_data),
             ),
         )
         .all()
