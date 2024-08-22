@@ -77,6 +77,7 @@ async def get_users_info(
     users: list[int] = Query(),
     categories: list[int] = Query(),
     user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
+    additional_data: list[str] = Query(default=[]),
 ) -> UsersInfoGet:
     """
     Получить информацию о пользователях.
@@ -84,4 +85,4 @@ async def get_users_info(
     :param categories: список id категорий, параметры которых нужно вернуть
     :return: список данных о пользователях и данных категориях
     """
-    return UsersInfoGet.model_validate(await get_users(users, categories, user))
+    return UsersInfoGet.model_validate(await get_users(users, categories, user, additional_data))
