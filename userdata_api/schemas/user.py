@@ -9,6 +9,10 @@ class UserInfo(Base):
     value: str | None = None
 
 
+class ExtendedUserInfo(UserInfo):
+    user_id: int
+
+
 class UserInfoGet(Base):
     items: list[UserInfo]
 
@@ -22,6 +26,10 @@ class UserInfoGet(Base):
         if len(frozenset(_iter_params)) != len(tuple(_iter_params)):
             raise ValueError("Category list is not unique")
         return v
+
+
+class UsersInfoGet(Base):
+    items: list[ExtendedUserInfo]
 
 
 class UserInfoUpdate(UserInfoGet):
