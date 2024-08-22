@@ -73,7 +73,6 @@ async def update_user(
     return StatusResponseModel(status="Success", message="User patch succeeded", ru="Изменение успешно")
 
 
-
 @user.get("", response_model=UsersInfoGet, response_model_exclude_unset=True)
 async def get_users_info(
     users: list[int] = Query(),
