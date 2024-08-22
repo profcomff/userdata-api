@@ -29,11 +29,17 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
     """
     scope_names = tuple(scope["name"] for scope in user["session_scopes"])
     if new.source == "admin" and "userdata.info.admin" not in scope_names:
-        raise Forbidden(f"Admin source requires 'userdata.info.admin' scope")
+        raise Forbidden(
+            "Admin source requires 'userdata.info.admin' scope",
+            "Источник 'администратор' требует право 'userdata.info.admin'",
+        )
     if new.source != "admin" and new.source != "user":
-        raise Forbidden("HTTP protocol applying only 'admin' and 'user' source")
+        raise Forbidden(
+            "HTTP protocol applying only 'admin' and 'user' source",
+            "Данный источник информации не обновляется через HTTP",
+        )
     if new.source == "user" and user["id"] != user_id:
-        raise Forbidden(f"'user' source requires information own")
+        raise Forbidden("'user' source requires information own", "Требуется владение информацией")
     for item in new.items:
         param = (
             db.session.query(Param)
@@ -54,12 +60,18 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             and not (new.source == "user" and user["id"] == user_id)
         ):
             db.session.rollback()
-            raise Forbidden(f"Updating category {param.category.name=} requires {param.category.update_scope=} scope")
+            raise Forbidden(
+                f"Updating category {param.category.name=} requires {param.category.update_scope=} scope",
+                f"Обновление категории {param.category.name=} требует {param.category.update_scope=} права",
+            )
         info = (
             db.session.query(Info)
             .join(Source)
             .filter(
-                Info.param_id == param.id, Info.owner_id == user_id, Source.name == new.source, not_(Info.is_deleted)
+                Info.param_id == param.id,
+                Info.owner_id == user_id,
+                Source.name == new.source,
+                not_(Info.is_deleted),
             )
             .one_or_none()
         )
@@ -80,10 +92,14 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
         if item.value is not None:
             if not param.changeable and "userdata.info.update" not in scope_names:
                 db.session.rollback()
-                raise Forbidden(f"Param {param.name=} change requires 'userdata.info.update' scope")
+                raise Forbidden(
+                    f"Param {param.name=} change requires 'userdata.info.update' scope",
+                    f"Изменение {param.name=} параметра требует 'userdata.info.update' права",
+                )
             info.value = item.value
             db.session.flush()
             continue
+
         if item.value is None:
             info.is_deleted = True
             db.session.flush()
@@ -206,6 +222,7 @@ async def get_users_info_batch(
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих id пользователя, категорию, параметр категории и значение этого параметра у пользователя
     """
+
     return UsersInfoGet(items=await get_users_info(user_ids, category_ids, user, additional_data))
 
 
@@ -222,6 +239,7 @@ async def get_user_info(
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у пользователя
     """
+
     result = await get_users_info([user_id], None, user, additional_data)
     for value in result:
         del value["user_id"]

@@ -22,6 +22,8 @@ async def create_source(
 ) -> SourceGet:
     """
     Создать источник данных
+
+    Scopes: `["userdata.source.create"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param source_inp: Моделька для создания
@@ -65,6 +67,8 @@ async def patch_source(
 ) -> SourceGet:
     """
     Обновить источник данных
+
+    Scopes: `["userdata.source.update"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди обновляемого источника
@@ -83,6 +87,8 @@ async def delete_source(
 ) -> StatusResponseModel:
     """
     Удалить источник данных
+
+    Scopes: `["userdata.source.delete"]`
     \f
     :param request: https://fastapi.tiangolo.com/advanced/using-request-directly/
     :param id: Айди удаляемого источника
@@ -90,4 +96,4 @@ async def delete_source(
     :return: None
     """
     Source.delete(id, session=db.session)
-    return StatusResponseModel(status="Success", message="Source deleted")
+    return StatusResponseModel(status="Success", message="Source deleted", ru="Источник удален")

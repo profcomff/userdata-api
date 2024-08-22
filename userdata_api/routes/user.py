@@ -4,6 +4,7 @@ from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Query
 from fastapi_sqlalchemy import db
 
+from userdata_api.models.db import Category, Info
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
 from userdata_api.utils.user import get_user_info as get
@@ -69,7 +70,8 @@ async def update_user(
     :return:
     """
     await patch(new_info, id, user)
-    return StatusResponseModel(status='Success', message='User patch succeeded')
+    return StatusResponseModel(status="Success", message="User patch succeeded", ru="Изменение успешно")
+
 
 
 @user.get("", response_model=UsersInfoGet, response_model_exclude_unset=True)
