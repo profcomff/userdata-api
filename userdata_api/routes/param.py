@@ -1,3 +1,5 @@
+from re import compile
+from re import error as ReError
 from typing import Any
 
 from auth_lib.fastapi import UnionAuth
@@ -5,7 +7,7 @@ from fastapi import APIRouter, Depends, Request
 from fastapi_sqlalchemy import db
 from pydantic.type_adapter import TypeAdapter
 
-from userdata_api.exceptions import AlreadyExists, ObjectNotFound
+from userdata_api.exceptions import AlreadyExists, InvalidRegex, ObjectNotFound
 from userdata_api.models.db import Category, Param
 from userdata_api.schemas.param import ParamGet, ParamPatch, ParamPost
 from userdata_api.schemas.response_model import StatusResponseModel
@@ -35,6 +37,11 @@ async def create_param(
     Category.get(category_id, session=db.session)
     if Param.query(session=db.session).filter(Param.category_id == category_id, Param.name == param_inp.name).all():
         raise AlreadyExists(Param, param_inp.name)
+    if param_inp.validation:
+        try:
+            compile(param_inp.validation)
+        except ReError:
+            raise InvalidRegex(Param, "validation")
     return ParamGet.model_validate(Param.create(session=db.session, **param_inp.dict(), category_id=category_id))
 
 
@@ -83,10 +90,15 @@ async def patch_param(
     :param category_id: Адйи категории в которой находится параметр
     :param param_inp: Модель для создания параметра
     :param _: Аутентификация
-    :return: ParamGet- Обновленный параметр
+    :return: ParamGet - Обновленный параметр
     """
     if category_id:
         Category.get(category_id, session=db.session)
+    if param_inp.validation:
+        try:
+            compile(param_inp.validation)
+        except ReError:
+            raise InvalidRegex(Param, "validation")
     if category_id:
         return ParamGet.from_orm(
             Param.update(id, session=db.session, **param_inp.dict(exclude_unset=True), category_id=category_id)
