@@ -78,7 +78,7 @@ async def get_users_info(
     users: list[int] = Query(),
     categories: list[int] = Query(),
     user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
-    additional_data: list[str] = Query(default=[]),
+    additional_data: list[int] = Query(default=[]),
 ) -> UsersInfoGet:
     """
     Получить информацию о пользователях.

@@ -110,7 +110,7 @@ async def get_users_info(
     user_ids: list[int],
     category_ids: list[int] | None,
     user: dict[str, int | list[dict[str, str | int]]],
-    additional_data: list[str],
+    additional_data: list[int],
 ) -> list[dict[str, str | None]]:
     """.
     Возвращает информацию о данных пользователей в указанных категориях
@@ -134,7 +134,7 @@ async def get_users_info(
             not_(Info.is_deleted),
             or_(
                 Param.visible_in_user_response,
-                func.concat('Param.', cast(Param.id, String)).in_(additional_data),
+                Param.id.in_(additional_data),
             ),
         )
     )
@@ -212,7 +212,7 @@ async def get_users_info_batch(
     user_ids: list[int],
     category_ids: list[int],
     user: dict[str, int | list[dict[str, str | int]]],
-    additional_data: list[str],
+    additional_data: list[int],
 ) -> UsersInfoGet:
     """.
     Возвращает информацию о данных пользователей в указанных категориях
@@ -227,7 +227,7 @@ async def get_users_info_batch(
 
 
 async def get_user_info(
-    user_id: int, user: dict[str, int | list[dict[str, str | int]]], additional_data: list[str]
+    user_id: int, user: dict[str, int | list[dict[str, str | int]]], additional_data: list[int]
 ) -> UserInfoGet:
     """Возвращает информауию о пользователе в соотетствии с переданным токеном.
 
