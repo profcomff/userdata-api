@@ -33,6 +33,62 @@ def test_create_with_scopes(client, dbsession, category):
     dbsession.flush()
 
 
+@pytest.mark.authenticated("userdata.param.create")
+def test_create_with_validation(client, dbsession, category):
+    _category = category()
+    name = f"test{random_string()}"
+    validation = "^test_[0-9]{3}$"
+    response = client.post(
+        f"/category/{_category.id}/param",
+        json={
+            "name": name,
+            "category_id": _category.id,
+            "type": "last",
+            "changeable": "true",
+            "is_required": "true",
+            "validation": validation,
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["id"]
+    assert response.json()["name"] == name
+    assert response.json()["category_id"] == _category.id
+    assert response.json()["type"] == "last"
+    assert response.json()["changeable"] == True
+    assert response.json()["is_required"] == True
+    assert response.json()["validation"] == validation
+    param = Param.get(response.json()["id"], session=dbsession)
+    assert param
+    assert param.name == name
+    assert param.id == response.json()["id"]
+    assert param.type == "last"
+    assert param.changeable == True
+    assert param.category_id == _category.id
+    assert param.category == _category
+    assert param.validation == validation
+    dbsession.delete(param)
+    dbsession.flush()
+
+
+@pytest.mark.authenticated("userdata.param.create")
+def test_create_with_uncompilable_validation(client, category):
+    _category = category()
+    name = f"test{random_string()}"
+    validation = '[]['
+    response = client.post(
+        f"/category/{_category.id}/param",
+        json={
+            "name": name,
+            "category_id": _category.id,
+            "type": "last",
+            "changeable": "true",
+            "is_required": "true",
+            "validation": validation,
+        },
+    )
+    assert response.status_code == 422
+
+
 @pytest.mark.authenticated()
 def test_get(client, dbsession, param):
     _param = param()

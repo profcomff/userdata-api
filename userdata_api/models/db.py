@@ -62,6 +62,7 @@ class Param(BaseDbModel):
     is_required: Mapped[bool] = mapped_column(Boolean, default=False)
     changeable: Mapped[bool] = mapped_column(Boolean, default=True)
     type: Mapped[ViewType] = mapped_column(DbEnum(ViewType, native_enum=False))
+    validation: Mapped[str] = mapped_column(String, nullable=True)
     create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)

@@ -290,3 +290,118 @@ def test_update_from_user_source_not_changeable(dbsession, client, param, source
     assert info1.value == "user_info"
     dbsession.delete(info1)
     dbsession.commit()
+
+
+@pytest.mark.authenticated(user_id=0)
+def test_create_new_with_validation(dbsession, client, param, source):
+    param = param()
+    source = source()
+    source.name = "user"
+    param.type = "all"
+    param.validation = "^validation_[1-3]{3}$"
+    dbsession.commit()
+    response_upd = client.post(
+        f"/user/0",
+        json={
+            "source": source.name,
+            "items": [{"category": param.category.name, "param": param.name, "value": "validation_123"}],
+        },
+    )
+    dbsession.expire_all()
+    assert response_upd.status_code == 200
+    response_get = client.get("/user/0")
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded', 'ru': 'Изменение успешно'}
+    assert {"category": param.category.name, "param": param.name, "value": "validation_123"} in list(
+        response_get.json()["items"]
+    )
+    assert len(response_get.json()["items"]) == 1
+    info_new = (
+        dbsession.query(Info)
+        .filter(Info.param_id == param.id, Info.owner_id == 0, Info.source_id == source.id, Info.is_deleted == False)
+        .one()
+    )
+    dbsession.delete(info_new)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated(user_id=0)
+def test_update_with_validation(dbsession, client, param, source):
+    param = param()
+    source = source()
+    source.name = "user"
+    param.type = "all"
+    param.validation = "^validation_[1-3]{3}$"
+    info1 = Info(value="validation_111", source_id=source.id, param_id=param.id, owner_id=0)
+    dbsession.add(info1)
+    dbsession.commit()
+    response_upd = client.post(
+        f"/user/0",
+        json={
+            "source": source.name,
+            "items": [{"category": param.category.name, "param": param.name, "value": "validation_222"}],
+        },
+    )
+    dbsession.expire_all()
+    assert response_upd.status_code == 200
+    response_get = client.get("/user/0")
+    assert response_upd.json() == {'status': 'Success', 'message': 'User patch succeeded', 'ru': 'Изменение успешно'}
+    assert {"category": param.category.name, "param": param.name, "value": "validation_222"} in list(
+        response_get.json()["items"]
+    )
+    assert len(response_get.json()["items"]) == 1
+    info_new = (
+        dbsession.query(Info)
+        .filter(Info.param_id == param.id, Info.owner_id == 0, Info.source_id == source.id, Info.is_deleted == False)
+        .one()
+    )
+    dbsession.delete(info_new)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated(user_id=0)
+def test_create_new_with_failing_validation(dbsession, client, param, source):
+    param = param()
+    source = source()
+    source.name = "user"
+    param.type = "all"
+    param.validation = "^validation_[1-3]{3}$"
+    dbsession.commit()
+    response_upd = client.post(
+        f"/user/0",
+        json={
+            "source": source.name,
+            "items": [{"category": param.category.name, "param": param.name, "value": "validation_000"}],
+        },
+    )
+    dbsession.expire_all()
+    assert response_upd.status_code == 422
+    response_get = client.get("/user/0")
+    assert response_get.status_code == 404
+
+
+@pytest.mark.authenticated(user_id=0)
+def test_update_with_failing_validation(dbsession, client, param, source):
+    param = param()
+    source = source()
+    source.name = "user"
+    param.type = "all"
+    param.validation = "^validation_[1-3]{3}$"
+    info = Info(value="validation_111", source_id=source.id, param_id=param.id, owner_id=0)
+    dbsession.add(info)
+    dbsession.commit()
+    response_upd = client.post(
+        f"/user/0",
+        json={
+            "source": source.name,
+            "items": [{"category": param.category.name, "param": param.name, "value": "validation_000"}],
+        },
+    )
+    dbsession.expire_all()
+    assert response_upd.status_code == 422
+    response_get = client.get("/user/0")
+    assert {"category": param.category.name, "param": param.name, "value": "validation_111"} in list(
+        response_get.json()["items"]
+    )
+    assert len(response_get.json()["items"]) == 1
+    dbsession.delete(info)
+    dbsession.commit()
