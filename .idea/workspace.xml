@@ -4,7 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21641f71-f0a2-4594-bf24-671b5709a185" name="Changes" comment="f" />
+    <list default="true" id="21641f71-f0a2-4594-bf24-671b5709a185" name="Changes" comment="f">
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_04_05_2024_15_16__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_04_05_2024_15_16__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_07_05_2024_16_51__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_07_05_2024_16_51__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_18_07_2024_19_52__Changes_.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/shelf/Uncommitted_changes_before_Checkout_at_18_07_2024_19_52__Changes_.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/userdata-api.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/userdata-api.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/versions/665f07866b38_.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/migrations/versions/ea9459426db1_add_visible_in_user_response_field_to_.py" beforeDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -61,19 +69,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python tests.pytest for test_category.test_create_with_scopes.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_user_get.test_get.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_user_post_then_get.test_create_new.executor&quot;: &quot;Run&quot;,
-    &quot;Python tests.pytest for test_user_post_then_get.test_update_from_user_source.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Huawei/Desktop/стажа/userdata-api&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PythonContentEntriesConfigurable&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python tests.pytest for test_category.test_create_with_scopes.executor": "Run",
+    "Python tests.pytest for test_user_get.test_get.executor": "Run",
+    "Python tests.pytest for test_user_post_then_get.test_create_new.executor": "Run",
+    "Python tests.pytest for test_user_post_then_get.test_update_from_user_source.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "14-скрытие-части-юзердаты-от-пользователя",
+    "last_opened_file_path": "C:/Users/Huawei/Desktop/стажа/userdata-api",
+    "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PythonContentEntriesConfigurable"
   }
-}</component>
+}]]></component>
   <component name="RunManager" selected="Python tests.pytest for test_user_get.test_get">
     <configuration name="pytest for test_user_get.test_get" type="tests" factoryName="py.test" temporary="true" nameIsGenerated="true">
       <module name="userdata-api" />
