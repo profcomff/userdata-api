@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from re import search
+
 from fastapi_sqlalchemy import db
 from sqlalchemy import String, cast, func, not_, or_
 
-from userdata_api.exceptions import Forbidden, ObjectNotFound
+from userdata_api.exceptions import Forbidden, InvalidValidation, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
 
@@ -81,6 +83,8 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             source = Source.query(session=db.session).filter(Source.name == new.source).one_or_none()
             if not source:
                 raise ObjectNotFound(Source, new.source)
+            if param.validation is not None and search(param.validation, item.value) is None:
+                raise InvalidValidation(Info, "value")
             Info.create(
                 session=db.session,
                 owner_id=user_id,
@@ -89,21 +93,20 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
                 value=item.value,
             )
             continue
-        if item.value is not None:
-            if not param.changeable and "userdata.info.update" not in scope_names:
-                db.session.rollback()
-                raise Forbidden(
-                    f"Param {param.name=} change requires 'userdata.info.update' scope",
-                    f"Изменение {param.name=} параметра требует 'userdata.info.update' права",
-                )
-            info.value = item.value
-            db.session.flush()
-            continue
-
         if item.value is None:
             info.is_deleted = True
             db.session.flush()
             continue
+        if not param.changeable and "userdata.info.update" not in scope_names:
+            db.session.rollback()
+            raise Forbidden(
+                f"Param {param.name=} change requires 'userdata.info.update' scope",
+                f"Изменение {param.name=} параметра требует 'userdata.info.update' права",
+            )
+        if param.validation is not None and search(param.validation, item.value) is None:
+            raise InvalidValidation(Info, "value")
+        info.value = item.value
+        db.session.flush()
 
 
 async def get_users_info(

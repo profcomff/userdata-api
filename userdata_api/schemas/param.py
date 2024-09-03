@@ -11,6 +11,7 @@ class ParamPost(Base):
     is_required: bool
     changeable: bool
     type: ViewType
+    validation: constr(min_length=1) | None = None
 
 
 class ParamPatch(Base):
@@ -19,6 +20,7 @@ class ParamPatch(Base):
     is_required: bool | None = None
     changeable: bool | None = None
     type: ViewType | None = None
+    validation: constr(min_length=1) | None = None
 
 
 class ParamGet(ParamPost):
