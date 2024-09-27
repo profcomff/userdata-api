@@ -1,10 +1,11 @@
 import string
 from typing import Any, Callable
 
+from pydantic import GetCoreSchemaHandler
 from pydantic._internal import _schema_generation_shared
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
-from pydantic import GetCoreSchemaHandler
+
 
 class Scope:
     """
