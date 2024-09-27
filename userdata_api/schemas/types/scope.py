@@ -4,7 +4,7 @@ from typing import Any, Callable
 from pydantic._internal import _schema_generation_shared
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
-
+from pydantic import GetCoreSchemaHandler
 
 class Scope:
     """
@@ -16,7 +16,7 @@ class Scope:
     """
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source: type[Any], handler: Callable) -> core_schema.CoreSchema:
+    def __get_pydantic_core_schema__(cls, source: type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
         return core_schema.general_after_validator_function(cls._validate, core_schema.str_schema())
 
     @classmethod
