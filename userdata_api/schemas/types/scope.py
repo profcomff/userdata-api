@@ -1,8 +1,7 @@
 import string
-from typing import Any, Callable
+from typing import Any
 
-from pydantic import GetCoreSchemaHandler
-from pydantic._internal import _schema_generation_shared
+from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
 
@@ -22,7 +21,7 @@ class Scope:
 
     @classmethod
     def __get_pydantic_json_schema__(
-        cls, core_schema: core_schema.CoreSchema, handler: _schema_generation_shared.GetJsonSchemaHandler
+        cls, core_schema: core_schema.CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
         field_schema = handler(core_schema)
         field_schema.update(type='string', format='scope')
