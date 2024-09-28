@@ -3,7 +3,7 @@ from __future__ import annotations
 from re import search
 
 from fastapi_sqlalchemy import db
-from sqlalchemy import not_
+from sqlalchemy import String, cast, func, not_, or_
 
 from userdata_api.exceptions import Forbidden, InvalidValidation, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
@@ -110,7 +110,10 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
 
 
 async def get_users_info(
-    user_ids: list[int], category_ids: list[int] | None, user: dict[str, int | list[dict[str, str | int]]]
+    user_ids: list[int],
+    category_ids: list[int] | None,
+    user: dict[str, int | list[dict[str, str | int]]],
+    additional_data: list[int],
 ) -> list[dict[str, str | None]]:
     """.
     Возвращает информацию о данных пользователей в указанных категориях
@@ -132,6 +135,10 @@ async def get_users_info(
             not_(Param.is_deleted),
             not_(Category.is_deleted),
             not_(Info.is_deleted),
+            or_(
+                Param.visible_in_user_response,
+                Param.id.in_(additional_data),
+            ),
         )
     )
     if not is_single_user:
@@ -205,7 +212,10 @@ async def get_users_info(
 
 
 async def get_users_info_batch(
-    user_ids: list[int], category_ids: list[int], user: dict[str, int | list[dict[str, str | int]]]
+    user_ids: list[int],
+    category_ids: list[int],
+    user: dict[str, int | list[dict[str, str | int]]],
+    additional_data: list[int],
 ) -> UsersInfoGet:
     """.
     Возвращает информацию о данных пользователей в указанных категориях
@@ -215,10 +225,13 @@ async def get_users_info_batch(
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих id пользователя, категорию, параметр категории и значение этого параметра у пользователя
     """
-    return UsersInfoGet(items=await get_users_info(user_ids, category_ids, user))
+
+    return UsersInfoGet(items=await get_users_info(user_ids, category_ids, user, additional_data))
 
 
-async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserInfoGet:
+async def get_user_info(
+    user_id: int, user: dict[str, int | list[dict[str, str | int]]], additional_data: list[int]
+) -> UserInfoGet:
     """Возвращает информауию о пользователе в соотетствии с переданным токеном.
 
     Пользователь может прочитать любую информацию о себе
@@ -229,7 +242,8 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     :param user: Сессия выполняющего запрос данных
     :return: Список словарей содержащих категорию, параметр категории и значение этого параметра у пользователя
     """
-    result = await get_users_info([user_id], None, user)
+
+    result = await get_users_info([user_id], None, user, additional_data)
     for value in result:
         del value["user_id"]
     return UserInfoGet(items=result)

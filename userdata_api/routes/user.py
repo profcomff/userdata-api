@@ -18,12 +18,14 @@ user = APIRouter(prefix="/user", tags=["User"])
 @user.get("/{id}", response_model=UserInfoGet)
 async def get_user_info(
     id: int,
+    additional_data: list[int] = Query(default=[]),
     user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> UserInfoGet:
     """
     Получить информацию о пользователе
     \f
     :param id: Айди овнера информации(пользователя)
+    :additional_data: список невидимых по дефолту параметров
     :param user: Аутентфикация
     :return: Словарь, ключи - категории на которые хватило прав(овнеру не нужны права, он получает всё).
     Значения - словари, ключи которых - имена параметров,
@@ -34,7 +36,8 @@ async def get_user_info(
     ...
     }
     """
-    return UserInfoGet.model_validate(await get(id, user))
+
+    return UserInfoGet.model_validate(await get(id, user, additional_data))
 
 
 @user.post("/{id}", response_model=StatusResponseModel)
@@ -57,7 +60,7 @@ async def update_user(
     Чтобы обновить от имени админиа, надо иметь скоуп `userdata.info.admin`
     Чтобы обновить неизменяемую информацию надо обладать скоупом `userdata.info.update`
     Для обновления своей информации(источник `user`) не нужны скоупы на обновление соответствующих категорий
-    Для обновления чужой информации от имени админа(источник  `admin`)
+    Для обновления чужой информации от имени админа(источник `admin`)
     нужны скоупы на обновление всех указанных в теле запроса категорий пользовательских данных данных
     \f
     :param request: Запрос из fastapi
@@ -75,6 +78,7 @@ async def get_users_info(
     users: list[int] = Query(),
     categories: list[int] = Query(),
     user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
+    additional_data: list[int] = Query(default=[]),
 ) -> UsersInfoGet:
     """
     Получить информацию о пользователях.
@@ -82,4 +86,4 @@ async def get_users_info(
     :param categories: список id категорий, параметры которых нужно вернуть
     :return: список данных о пользователях и данных категориях
     """
-    return UsersInfoGet.model_validate(await get_users(users, categories, user))
+    return UsersInfoGet.model_validate(await get_users(users, categories, user, additional_data))
