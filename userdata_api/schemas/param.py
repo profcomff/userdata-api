@@ -6,6 +6,7 @@ from .base import Base
 
 
 class ParamPost(Base):
+    visible_in_user_response: bool = True
     name: constr(min_length=1)
     is_required: bool
     changeable: bool
@@ -14,6 +15,7 @@ class ParamPost(Base):
 
 
 class ParamPatch(Base):
+    visible_in_user_response: bool = True
     name: constr(min_length=1) | None = None
     is_required: bool | None = None
     changeable: bool | None = None

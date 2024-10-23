@@ -57,6 +57,7 @@ class Param(BaseDbModel):
     а параметры эти могут лежать в категории "контакты"
     """
 
+    visible_in_user_response: Mapped[bool] = mapped_column(Boolean, default=True)
     name: Mapped[str] = mapped_column(String)
     category_id: Mapped[int] = mapped_column(Integer, ForeignKey(Category.id))
     is_required: Mapped[bool] = mapped_column(Boolean, default=False)
