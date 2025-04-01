@@ -18,7 +18,6 @@ user = APIRouter(prefix="/user", tags=["User"])
 @user.get("/{id}", response_model=UserInfoGet)
 async def get_user_info(
     id: int,
-    additional_data: list[int] = Query(default=[]),
     user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),
 ) -> UserInfoGet:
     """
@@ -37,7 +36,7 @@ async def get_user_info(
     }
     """
 
-    return UserInfoGet.model_validate(await get(id, user, additional_data))
+    return UserInfoGet.model_validate(await get(id, user))
 
 
 @user.post("/{id}", response_model=StatusResponseModel)
