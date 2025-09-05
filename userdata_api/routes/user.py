@@ -2,9 +2,7 @@ from typing import Any
 
 from auth_lib.fastapi import UnionAuth
 from fastapi import APIRouter, Depends, Query
-from fastapi_sqlalchemy import db
 
-from userdata_api.models.db import Category, Info
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
 from userdata_api.utils.user import get_user_info as get
