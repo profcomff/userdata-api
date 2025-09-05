@@ -25,7 +25,7 @@ def process_models(key: Any, value: Any) -> tuple[UserLoginKey | None, UserLogin
         processed_k = UserLoginKey.model_validate(key)
         processed_v = None
         if value is not None:
-            processed_v=UserLogin.model_validate(value)
+            processed_v = UserLogin.model_validate(value)
         return processed_k, processed_v
     except pydantic.ValidationError:
         log.error(f"Validation error occurred, {key=}, {value=}", exc_info=False)
