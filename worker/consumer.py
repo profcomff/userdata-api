@@ -30,7 +30,7 @@ def process_models(key: Any, value: Any) -> tuple[UserLoginKey | None, UserLogin
 
 def process_message(message: tuple[Any, Any]) -> None:
     processed_k, processed_v = process_models(*message)
-    if not (processed_k and processed_v):
+    if processed_k is None:
         return
     patch_user_info(processed_v, processed_k.user_id, session=_Session())
 
