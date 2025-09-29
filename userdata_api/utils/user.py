@@ -14,9 +14,11 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
     """
     Обновить информацию о пользователе в соотетствии с переданным токеном.
 
-    Метод обновляет только информацию из источников `admin` и `user`
+    Метод обновляет только информацию из источников `admin`, `user` или `dwh`.
 
     Для обновления от имени админа нужен скоуп `userdata.info.admin`
+
+    Для обновления информации из dwh нужен скоуп `userdata.info.dwh`
 
     Для обновления от иимени пользователя необходима владениие ининформацией
 
@@ -35,9 +37,14 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
             "Admin source requires 'userdata.info.admin' scope",
             "Источник 'администратор' требует право 'userdata.info.admin'",
         )
-    if new.source != "admin" and new.source != "user":
+    if new.source == "dwh" and "userdata.info.dwh" not in scope_names:
         raise Forbidden(
-            "HTTP protocol applying only 'admin' and 'user' source",
+            "Dwh source requires 'userdata.info.dwh' scope",
+            "Источник 'dwh' требует право 'userdata.info.dwh'",
+        )
+    if new.source != "admin" and new.source != "user" and new.source != "dwh":
+        raise Forbidden(
+            "HTTP protocol applying only 'admin', 'user' or 'dwh' source",
             "Данный источник информации не обновляется через HTTP",
         )
     if new.source == "user" and user["id"] != user_id:
