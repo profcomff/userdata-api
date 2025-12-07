@@ -1,15 +1,9 @@
 from __future__ import annotations
 
-from re import search
-
 from fastapi_sqlalchemy import db
-from sqlalchemy import String, cast, func, not_, or_
-
-from userdata_api.exceptions import Forbidden, InvalidValidation, ObjectNotFound
-from userdata_api.models.db import Category, Info, Param, Source, ViewType
+from userdata_api.models.db import Info, Param
 from userdata_api.schemas.admin import UserDebugCardGet, UserDebugCardUpdate
 from .user import patch_user_info as user_patch
-from .user import get_user_info as user_get
 from userdata_api.schemas.user import UserInfoUpdate, UserInfo
 
 
@@ -62,21 +56,27 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         - is_union_member: Статус мэтчинга (из параметра "Членство в профсоюзе")
         - last_check_timestamp: Дата последней проверки
     """
-    user_info_response = await user_get(user_id, user)
+    full_name = db.session.query(Info).join(Info.param).filter(
+        Info.owner_id == user_id,
+        Param.name == "Полное имя"
+    ).one_or_none()
+    is_union_member = db.session.query(Info).join(Info.param).filter(
+        Info.owner_id == user_id,
+        Param.name == "Членство в профсоюзе"
+    ).one_or_none()
+    student_card_number = db.session.query(Info).join(Info.param).filter(
+        Info.owner_id == user_id,
+        Param.name == "Номер студенческого билета"
+    ).one_or_none()
+    union_card_number = db.session.query(Info).join(Info.param).filter(
+        Info.owner_id == user_id,
+        Param.name == "Номер профсоюзного билета"
+    ).one_or_none()
     result = {
         "user_id": user_id,
-        "full_name": None,
-        "student_card_number": None,
-        "union_card_number": None,
-        "is_union_member": "false",
+        "full_name": full_name.value if full_name else None,
+        "student_card_number": student_card_number.value if student_card_number else None,
+        "union_card_number": union_card_number.value if union_card_number else None,
+        "is_union_member": is_union_member.value if is_union_member else "false",
     }
-    for item in user_info_response.items:
-        if item.param == "Полное имя":
-            result["full_name"] = item.value
-        elif item.param == "Номер студенческого билета":
-            result["student_card_number"] = item.value
-        elif item.param == "Номер профсоюзного билета":
-            result["union_card_number"] = item.value
-        elif item.param == "Членство в профсоюзе":
-            result["is_union_member"] = item.value
     return result
