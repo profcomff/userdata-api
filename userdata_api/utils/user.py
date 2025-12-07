@@ -3,7 +3,7 @@ from __future__ import annotations
 from re import search
 
 from fastapi_sqlalchemy import db
-from sqlalchemy import not_, or_
+from sqlalchemy import String, cast, func, not_, or_
 
 from userdata_api.exceptions import Forbidden, InvalidValidation, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
