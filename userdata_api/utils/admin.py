@@ -9,6 +9,7 @@ from userdata_api.exceptions import Forbidden, InvalidValidation, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.admin import UserDebugCardGet, UserDebugCardUpdate
 from .user import patch_user_info as user_patch
+from .user import get_user_info as user_get
 from userdata_api.schemas.user import UserInfoUpdate, UserInfo
 
 
@@ -61,3 +62,21 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         - is_union_member: Статус мэтчинга (из параметра "Членство в профсоюзе")
         - last_check_timestamp: Дата последней проверки
     """
+    user_info_response = await user_get(user_id, user)
+    result = {
+        "user_id": user_id,
+        "full_name": None,
+        "student_card_number": None,
+        "union_card_number": None,
+        "is_union_member": "false",
+    }
+    for item in user_info_response.items:
+        if item.param == "Полное имя":
+            result["full_name"] = item.value
+        elif item.param == "Номер студенческого билета":
+            result["student_card_number"] = item.value
+        elif item.param == "Номер профсоюзного билета":
+            result["union_card_number"] = item.value
+        elif item.param == "Членство в профсоюзе":
+            result["is_union_member"] = item.value
+    return result
