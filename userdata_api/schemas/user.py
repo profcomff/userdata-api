@@ -34,3 +34,11 @@ class UsersInfoGet(Base):
 
 class UserInfoUpdate(UserInfoGet):
     source: constr(min_length=1)
+
+
+class UserDebugCard(Base):
+    user_id: int
+    full_name: str | None = None
+    student_card_number: str | None = None
+    union_card_number: str | None = None
+    is_union_member: str
