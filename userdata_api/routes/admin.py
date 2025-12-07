@@ -14,7 +14,7 @@ admin = APIRouter(prefix="/admin", tags=["Admin"])
 
 @admin.get("/user/{user_id}", response_model=UserDebugCardGet)
 async def get_user_debug_card(
-    user_id: int,  ##or full_name
+    user_id: int,
     user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
 ) -> UserDebugCardGet:
     """
