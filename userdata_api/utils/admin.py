@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from fastapi_sqlalchemy import db
+
 from userdata_api.models.db import Info, Param
 from userdata_api.schemas.admin import UserDebugCardGet, UserDebugCardUpdate
+from userdata_api.schemas.user import UserInfo, UserInfoUpdate
+
 from .user import patch_user_info as user_patch
-from userdata_api.schemas.user import UserInfoUpdate, UserInfo
 
 
 async def patch_user_info(
@@ -24,23 +26,15 @@ async def patch_user_info(
     """
     update_info = []
     if new.full_name is not None:
-        update_info.append(UserInfo(
-            category="Личная информация",
-            param="Полное имя",
-            value=new.full_name
-        ))
+        update_info.append(UserInfo(category="Личная информация", param="Полное имя", value=new.full_name))
     if new.student_card_number is not None:
-        update_info.append(UserInfo(
-            category="Учёба",
-            param="Номер студенческого билета",
-            value=new.student_card_number
-        ))
-    if update_info:
-        update_request = UserInfoUpdate(
-            items=update_info,
-            source="admin"
+        update_info.append(
+            UserInfo(category="Учёба", param="Номер студенческого билета", value=new.student_card_number)
         )
+    if update_info:
+        update_request = UserInfoUpdate(items=update_info, source="admin")
         await user_patch(update_request, user_id, user)
+
 
 async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserDebugCardGet:
     """
@@ -56,22 +50,30 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         - is_union_member: Статус мэтчинга (из параметра "Членство в профсоюзе")
         - last_check_timestamp: Дата последней проверки
     """
-    full_name = db.session.query(Info).join(Info.param).filter(
-        Info.owner_id == user_id,
-        Param.name == "Полное имя"
-    ).one_or_none()
-    is_union_member = db.session.query(Info).join(Info.param).filter(
-        Info.owner_id == user_id,
-        Param.name == "Членство в профсоюзе"
-    ).one_or_none()
-    student_card_number = db.session.query(Info).join(Info.param).filter(
-        Info.owner_id == user_id,
-        Param.name == "Номер студенческого билета"
-    ).one_or_none()
-    union_card_number = db.session.query(Info).join(Info.param).filter(
-        Info.owner_id == user_id,
-        Param.name == "Номер профсоюзного билета"
-    ).one_or_none()
+    full_name = (
+        db.session.query(Info)
+        .join(Info.param)
+        .filter(Info.owner_id == user_id, Param.name == "Полное имя")
+        .one_or_none()
+    )
+    is_union_member = (
+        db.session.query(Info)
+        .join(Info.param)
+        .filter(Info.owner_id == user_id, Param.name == "Членство в профсоюзе")
+        .one_or_none()
+    )
+    student_card_number = (
+        db.session.query(Info)
+        .join(Info.param)
+        .filter(Info.owner_id == user_id, Param.name == "Номер студенческого билета")
+        .one_or_none()
+    )
+    union_card_number = (
+        db.session.query(Info)
+        .join(Info.param)
+        .filter(Info.owner_id == user_id, Param.name == "Номер профсоюзного билета")
+        .one_or_none()
+    )
     result = {
         "user_id": user_id,
         "full_name": full_name.value if full_name else None,
