@@ -15,10 +15,12 @@ admin = APIRouter(prefix="/admin", tags=["Admin"])
 @admin.get("/user/{user_id}", response_model=UserDebugCardGet)
 async def get_user_debug_card(
     user_id: int,  ##or full_name
-    user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),  ##scopes
+    user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
 ) -> UserDebugCardGet:
     """
     Получает профсоюзную информацию пользователя.
+
+    Скоупы: `["userdata.info.admin"]`
     """
 
     return UserDebugCardGet.model_validate(await get(user_id, user))
@@ -28,10 +30,12 @@ async def get_user_debug_card(
 async def update_user_debug_card(
     new_info: UserDebugCardUpdate,
     user_id: int,
-    user: dict[str, Any] = Depends(UnionAuth(scopes=[], allow_none=False, auto_error=True)),  ##scopes
+    user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
 ) -> StatusResponseModel:
     """
     Обновить данные в профсоюзной информации пользователя.
+
+    Скоупы: `["userdata.info.admin"]`
 
      - **user_id**: id пользователя.
 

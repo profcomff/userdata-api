@@ -1,6 +1,15 @@
 from __future__ import annotations
 
+from re import search
+
+from fastapi_sqlalchemy import db
+from sqlalchemy import String, cast, func, not_, or_
+
+from userdata_api.exceptions import Forbidden, InvalidValidation, ObjectNotFound
+from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.admin import UserDebugCardGet, UserDebugCardUpdate
+from .user import patch_user_info as user_patch
+from userdata_api.schemas.user import UserInfoUpdate, UserInfo
 
 
 async def patch_user_info(
@@ -9,18 +18,34 @@ async def patch_user_info(
     """
     Обновить информацию о пользователе в соотетствии с переданным токеном.
 
-    Метод обновляет только информацию из источников `admin`, `user` или `dwh`.
+    Метод обновляет только информацию из источников `admin`.
 
     Для обновления от имени админа нужен скоуп `userdata.info.admin`
-
-    Для обновления информации из dwh нужен скоуп `userdata.info.dwh`
 
     :param new: модель запроса, в ней то, на что будет изменена информация о пользователе
     :param user_id: Айди пользователя
     :param user: Сессия пользователя выполняющего запрос
     :return: get_user_info для текущего пользователя с переданными правами
     """
-
+    update_info = []
+    if new.full_name is not None:
+        update_info.append(UserInfo(
+            category="Личная информация",
+            param="Полное имя",
+            value=new.full_name
+        ))
+    if new.student_card_number is not None:
+        update_info.append(UserInfo(
+            category="Учёба",
+            param="Номер студенческого билета",
+            value=new.student_card_number
+        ))
+    if update_info:
+        update_request = UserInfoUpdate(
+            items=update_info,
+            source="admin"
+        )
+        await user_patch(update_request, user_id, user)
 
 async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserDebugCardGet:
     """
