@@ -3,14 +3,14 @@ from __future__ import annotations
 from fastapi_sqlalchemy import db
 
 from userdata_api.models.db import Info, Param
-from userdata_api.schemas.admin import UserDebugCardGet, UserDebugCardUpdate
+from userdata_api.schemas.admin import UserCardGet, UserCardUpdate
 from userdata_api.schemas.user import UserInfo, UserInfoUpdate
 
 from .user import patch_user_info as user_patch
 
 
 async def patch_user_info(
-    new: UserDebugCardUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]
+    new: UserCardUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]
 ) -> None:
     """
     Обновить информацию о пользователе в соотетствии с переданным токеном.
@@ -36,7 +36,7 @@ async def patch_user_info(
         await user_patch(update_request, user_id, user)
 
 
-async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserDebugCardGet:
+async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> UserCardGet:
     """
     Получить профсоюзную информацию пользователя для админки.
 
@@ -79,6 +79,6 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         "full_name": full_name.value if full_name else None,
         "student_card_number": student_card_number.value if student_card_number else None,
         "union_card_number": union_card_number.value if union_card_number else None,
-        "is_union_member": is_union_member.value if is_union_member else "false",
+        "is_union_member": is_union_member.value if is_union_member else False,
     }
     return result

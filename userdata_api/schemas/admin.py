@@ -1,14 +1,14 @@
 from .base import Base
 
 
-class UserDebugCardGet(Base):
+class UserCardGet(Base):
     user_id: int
     full_name: str | None = None
     student_card_number: str | None = None
     union_card_number: str | None = None
-    is_union_member: str
+    is_union_member: bool
 
 
-class UserDebugCardUpdate(Base):
+class UserCardUpdate(Base):
     full_name: str | None = None
     student_card_number: str | None = None
