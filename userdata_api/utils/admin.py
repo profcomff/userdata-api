@@ -9,9 +9,7 @@ from userdata_api.schemas.user import UserInfo, UserInfoUpdate
 from .user import patch_user_info as user_patch
 
 
-async def patch_user_info(
-    new: UserCardUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]
-) -> None:
+async def patch_user_info(new: UserCardUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> None:
     """
     Обновить информацию о пользователе в соотетствии с переданным токеном.
 
@@ -79,6 +77,6 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         "full_name": full_name.value if full_name else None,
         "student_card_number": student_card_number.value if student_card_number else None,
         "union_card_number": union_card_number.value if union_card_number else None,
-        "is_union_member": is_union_member.value if is_union_member else False,
+        "is_union_member": is_union_member.value if is_union_member else "false",
     }
     return result

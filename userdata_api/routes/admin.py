@@ -5,8 +5,7 @@ from fastapi import APIRouter, Depends
 
 from userdata_api.schemas.admin import UserCardGet, UserCardUpdate
 from userdata_api.schemas.response_model import StatusResponseModel
-from userdata_api.utils.admin import get_user_info
-from userdata_api.utils.admin import patch_user_info
+from userdata_api.utils.admin import get_user_info, patch_user_info
 
 
 admin = APIRouter(prefix="/admin", tags=["Admin"])
@@ -16,14 +15,14 @@ admin = APIRouter(prefix="/admin", tags=["Admin"])
 async def get_user_card(
     user_id: int,
     user: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.info.admin"], allow_none=False, auto_error=True)),
-) -> UserCardGet:
+):
     """
     Получает профсоюзную информацию пользователя.
 
     Скоупы: `["userdata.info.admin"]`
     """
 
-    return UserCardGet.model_validate(await get_user_info(user_id, user))
+    return await get_user_info(user_id, user)
 
 
 @admin.patch("/user/{user_id}", response_model=StatusResponseModel)

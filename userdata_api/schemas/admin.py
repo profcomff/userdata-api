@@ -6,7 +6,7 @@ class UserCardGet(Base):
     full_name: str | None = None
     student_card_number: str | None = None
     union_card_number: str | None = None
-    is_union_member: bool
+    is_union_member: str
 
 
 class UserCardUpdate(Base):
