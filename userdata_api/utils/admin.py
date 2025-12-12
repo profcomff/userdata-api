@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi_sqlalchemy import db
 
+from userdata_api.exceptions import ObjectNotFound
 from userdata_api.models.db import Info, Param
 from userdata_api.schemas.admin import UserCardGet, UserCardUpdate
 from userdata_api.schemas.user import UserInfo, UserInfoUpdate
@@ -48,6 +49,9 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
         - is_union_member: Статус мэтчинга (из параметра "Членство в профсоюзе")
         - last_check_timestamp: Дата последней проверки
     """
+    users = db.session.query(Info).filter(Info.owner_id == user_id).first()
+    if not users:
+        raise ObjectNotFound(Info, user_id)
     full_name = (
         db.session.query(Info)
         .join(Info.param)
