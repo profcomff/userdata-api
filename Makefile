@@ -22,4 +22,4 @@ db:
 	docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust --name db-userdata_api postgres:15
 
 migrate:
-	alembic upgrade head
+	source ./venv/bin/activate && alembic upgrade head

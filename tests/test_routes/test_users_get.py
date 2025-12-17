@@ -1,5 +1,3 @@
-from time import sleep
-
 import pytest
 
 from userdata_api.models.db import Info, Param

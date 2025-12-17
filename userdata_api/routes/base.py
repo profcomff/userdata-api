@@ -5,6 +5,7 @@ from fastapi_sqlalchemy import DBSessionMiddleware
 from settings import get_settings
 from userdata_api import __version__
 
+from .admin import admin
 from .category import category
 from .param import param
 from .source import source
@@ -41,3 +42,4 @@ app.include_router(source)
 app.include_router(category)
 app.include_router(param)
 app.include_router(user)
+app.include_router(admin)
