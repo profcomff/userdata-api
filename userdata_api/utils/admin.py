@@ -3,7 +3,7 @@ from __future__ import annotations
 from fastapi_sqlalchemy import db
 
 from userdata_api.exceptions import ObjectNotFound
-from userdata_api.models.db import Info, Param
+from userdata_api.models.db import Info, Param, Source
 from userdata_api.schemas.admin import UserCardGet, UserCardUpdate
 from userdata_api.schemas.user import UserInfo, UserInfoUpdate
 
@@ -55,26 +55,29 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     full_name = (
         db.session.query(Info)
         .join(Info.param)
+        .join(Info.source)
         .filter(Info.owner_id == user_id, Param.name == "Полное имя")
-        .one_or_none()
+        .order_by(Source.trust_level.desc())
+        .order_by(Info.create_ts.desc())
+        .first()
     )
     is_union_member = (
         db.session.query(Info)
         .join(Info.param)
         .filter(Info.owner_id == user_id, Param.name == "Членство в профсоюзе")
-        .one_or_none()
+        .first()
     )
     student_card_number = (
         db.session.query(Info)
         .join(Info.param)
         .filter(Info.owner_id == user_id, Param.name == "Номер студенческого билета")
-        .one_or_none()
+        .first()
     )
     union_card_number = (
         db.session.query(Info)
         .join(Info.param)
         .filter(Info.owner_id == user_id, Param.name == "Номер профсоюзного билета")
-        .one_or_none()
+        .first()
     )
     result = {
         "user_id": user_id,
