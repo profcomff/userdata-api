@@ -64,6 +64,7 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     is_union_member = (
         db.session.query(Info)
         .join(Info.param)
+        .join(Info.source)
         .filter(Info.owner_id == user_id, Param.name == "Членство в профсоюзе")
         .order_by(Source.trust_level.desc())
         .order_by(Info.create_ts.desc())
@@ -72,6 +73,7 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     student_card_number = (
         db.session.query(Info)
         .join(Info.param)
+        .join(Info.source)
         .filter(Info.owner_id == user_id, Param.name == "Номер студенческого билета")
         .order_by(Source.trust_level.desc())
         .order_by(Info.create_ts.desc())
@@ -80,6 +82,7 @@ async def get_user_info(user_id: int, user: dict[str, int | list[dict[str, str |
     union_card_number = (
         db.session.query(Info)
         .join(Info.param)
+        .join(Info.source)
         .filter(Info.owner_id == user_id, Param.name == "Номер профсоюзного билета")
         .order_by(Source.trust_level.desc())
         .order_by(Info.create_ts.desc())
