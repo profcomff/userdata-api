@@ -8,6 +8,7 @@ from userdata_api import __version__
 from .admin import admin
 from .category import category
 from .param import param
+from .param_alias import param_alias
 from .source import source
 from .user import user
 
@@ -41,5 +42,6 @@ app.add_middleware(
 app.include_router(source)
 app.include_router(category)
 app.include_router(param)
+app.include_router(param_alias)
 app.include_router(user)
 app.include_router(admin)

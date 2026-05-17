@@ -4,7 +4,8 @@ import sqlalchemy.orm
 from event_schema.auth import UserLogin
 from sqlalchemy import not_
 
-from userdata_api.models.db import Category, Info, Param, Source
+from userdata_api.models.db import Info, Source
+from userdata_api.utils.param_alias import get_param_by_name_or_alias
 
 
 log = logging.getLogger(__name__)
@@ -12,16 +13,11 @@ log = logging.getLogger(__name__)
 
 def patch_user_info(new: UserLogin, user_id: int, *, session: sqlalchemy.orm.Session) -> None:
     for item in new.items:
-        param = (
-            session.query(Param)
-            .join(Category)
-            .filter(
-                Param.name == item.param,
-                Category.name == item.category,
-                not_(Param.is_deleted),
-                not_(Category.is_deleted),
-            )
-            .one_or_none()
+        param = get_param_by_name_or_alias(
+            session=session,
+            category_name=item.category,
+            param_name=item.param,
+            source_name=new.source,
         )
         if not param:
             session.rollback()
