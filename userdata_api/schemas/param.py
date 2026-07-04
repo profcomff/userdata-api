@@ -3,6 +3,7 @@ from pydantic import constr
 from userdata_api.models.db import ViewType
 
 from .base import Base
+from .param_alias import ParamAliasGet
 
 
 class ParamPost(Base):
@@ -28,3 +29,4 @@ class ParamPatch(Base):
 class ParamGet(ParamPost):
     id: int
     category_id: int
+    aliases: list[ParamAliasGet] | None = None

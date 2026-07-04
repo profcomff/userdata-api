@@ -84,6 +84,13 @@ class Param(BaseDbModel):
         primaryjoin="and_(Param.id==Info.param_id, not_(Info.is_deleted))",
         lazy="joined",
     )
+    aliases: Mapped[list[ParamAlias]] = relationship(
+        "ParamAlias",
+        foreign_keys="ParamAlias.param_id",
+        back_populates="param",
+        primaryjoin="and_(Param.id==ParamAlias.param_id, not_(ParamAlias.is_deleted))",
+        lazy="joined",
+    )
 
     @property
     def pytype(self) -> type[str | list[str]]:
@@ -111,6 +118,47 @@ class Source(BaseDbModel):
         primaryjoin="and_(Source.id==Info.source_id, not_(Info.is_deleted))",
         lazy="joined",
     )
+    aliases: Mapped[list[ParamAlias]] = relationship(
+        "ParamAlias",
+        foreign_keys="ParamAlias.source_id",
+        back_populates="source",
+        primaryjoin="and_(Source.id==ParamAlias.source_id, not_(ParamAlias.is_deleted))",
+        lazy="joined",
+    )
+
+
+class ParamAlias(BaseDbModel):
+    """
+    Алиас параметра.
+    Может быть привязан к конкретному источнику или быть общим для всех источников.
+    """
+
+    name: Mapped[str] = mapped_column(String, unique=True)
+    param_id: Mapped[int] = mapped_column(Integer, ForeignKey(Param.id))
+    source_id: Mapped[int | None] = mapped_column(Integer, ForeignKey(Source.id), nullable=True)
+    create_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    modify_ts: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    is_deleted: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    param: Mapped[Param] = relationship(
+        "Param",
+        foreign_keys="ParamAlias.param_id",
+        back_populates="aliases",
+        primaryjoin="and_(ParamAlias.param_id==Param.id, not_(Param.is_deleted))",
+        lazy="joined",
+    )
+
+    source: Mapped[Source | None] = relationship(
+        "Source",
+        foreign_keys="ParamAlias.source_id",
+        back_populates="aliases",
+        primaryjoin="and_(ParamAlias.source_id==Source.id, not_(Source.is_deleted))",
+        lazy="joined",
+    )
+
+    @hybrid_property
+    def source_name(self) -> str | None:
+        return self.source.name if self.source else None
 
 
 class Info(BaseDbModel):

@@ -8,6 +8,7 @@ from sqlalchemy import not_, or_
 from userdata_api.exceptions import Forbidden, InvalidValidation, ObjectNotFound
 from userdata_api.models.db import Category, Info, Param, Source, ViewType
 from userdata_api.schemas.user import UserInfoGet, UserInfoUpdate, UsersInfoGet
+from userdata_api.utils.param_alias import get_param_by_name_or_alias
 
 
 async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int | list[dict[str, str | int]]]) -> None:
@@ -50,16 +51,11 @@ async def patch_user_info(new: UserInfoUpdate, user_id: int, user: dict[str, int
     if new.source == "user" and user["id"] != user_id:
         raise Forbidden("'user' source requires information own", "Требуется владение информацией")
     for item in new.items:
-        param = (
-            db.session.query(Param)
-            .join(Category)
-            .filter(
-                Param.name == item.param,
-                Category.name == item.category,
-                not_(Param.is_deleted),
-                not_(Category.is_deleted),
-            )
-            .one_or_none()
+        param = get_param_by_name_or_alias(
+            session=db.session,
+            category_name=item.category,
+            param_name=item.param,
+            source_name=new.source,
         )
         if not param:
             raise ObjectNotFound(Param, item.param)
