@@ -11,7 +11,6 @@ from .param import param
 from .source import source
 from .user import user
 
-
 settings = get_settings()
 app = FastAPI(
     title='Сервис пользовательских данных',

@@ -7,7 +7,6 @@ from userdata_api.schemas.admin import UserCardGet, UserCardUpdate
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.utils.admin import get_user_info, patch_user_info
 
-
 admin = APIRouter(prefix="/admin", tags=["Admin"])
 
 
