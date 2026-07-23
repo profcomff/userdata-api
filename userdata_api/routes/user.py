@@ -9,7 +9,6 @@ from userdata_api.utils.user import get_user_info as get
 from userdata_api.utils.user import get_users_info_batch as get_users
 from userdata_api.utils.user import patch_user_info as patch
 
-
 user = APIRouter(prefix="/user", tags=["User"])
 
 

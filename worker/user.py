@@ -6,7 +6,6 @@ from sqlalchemy import not_
 
 from userdata_api.models.db import Category, Info, Param, Source
 
-
 log = logging.getLogger(__name__)
 
 

@@ -7,7 +7,6 @@ from confluent_kafka import Consumer
 from settings import get_settings
 from userdata_api import __version__
 
-
 log = logging.getLogger(__name__)
 
 
