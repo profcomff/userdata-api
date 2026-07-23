@@ -11,6 +11,9 @@ format:
 	source ./venv/bin/activate && autoflake -r --in-place --remove-all-unused-imports ./userdata_api
 	source ./venv/bin/activate && isort ./userdata_api
 	source ./venv/bin/activate && black ./userdata_api
+	source ./venv/bin/activate && autoflake -r --in-place --remove-all-unused-imports ./worker
+	source ./venv/bin/activate && isort ./worker
+	source ./venv/bin/activate && black ./worker
 	source ./venv/bin/activate && autoflake -r --in-place --remove-all-unused-imports ./tests
 	source ./venv/bin/activate && isort ./tests
 	source ./venv/bin/activate && black ./tests
