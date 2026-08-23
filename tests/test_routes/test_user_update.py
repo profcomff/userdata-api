@@ -440,3 +440,92 @@ def test_delete_forbidden_by_category_scope(dbsession, client, param, admin_sour
     assert response.status_code == 403
     assert not info1.is_deleted
     dbsession.delete(info1)
+
+
+@pytest.mark.authenticated("test.cat_update.first", "userdata.info.admin", user_id=1)
+def test_update_by_source_alias(dbsession, client, param, admin_source):
+    _param = param()
+    _param.category.update_scope = "test.cat_update.first"
+    alias_name = f"alias_{random_string()}"
+    dbsession.add(ParamAlias(name=alias_name, param_id=_param.id, source_id=admin_source.id))
+    dbsession.commit()
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "admin",
+            "items": [{"category": _param.category.name, "param": alias_name, "value": "first_updated"}],
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 200
+    info = (
+        dbsession.query(Info)
+        .filter(
+            Info.param_id == _param.id, Info.owner_id == 0, Info.source_id == admin_source.id, Info.is_deleted == False
+        )
+        .one()
+    )
+    assert info.value == "first_updated"
+    alias = dbsession.query(ParamAlias).filter(ParamAlias.name == alias_name).one()
+    dbsession.delete(info)
+    dbsession.delete(alias)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated("test.cat_update.first", "userdata.info.admin", user_id=1)
+def test_update_by_global_alias(dbsession, client, param, admin_source):
+    _param = param()
+    _param.category.update_scope = "test.cat_update.first"
+    alias_name = f"alias_{random_string()}"
+    dbsession.add(ParamAlias(name=alias_name, param_id=_param.id, source_id=None))
+    dbsession.commit()
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "admin",
+            "items": [{"category": _param.category.name, "param": alias_name, "value": "global_updated"}],
+        },
+    )
+    dbsession.expire_all()
+    assert response.status_code == 200
+    info = (
+        dbsession.query(Info)
+        .filter(
+            Info.param_id == _param.id, Info.owner_id == 0, Info.source_id == admin_source.id, Info.is_deleted == False
+        )
+        .one()
+    )
+    assert info.value == "global_updated"
+    alias = dbsession.query(ParamAlias).filter(ParamAlias.name == alias_name).one()
+    dbsession.delete(info)
+    dbsession.delete(alias)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated("test.cat_update.first", "userdata.info.admin", user_id=1)
+def test_update_by_foreign_source_alias_not_found(dbsession, client, param, admin_source, source):
+    _param = param()
+    _param.category.update_scope = "test.cat_update.first"
+    _source = source()
+    alias_name = f"alias_{random_string()}"
+    dbsession.add(ParamAlias(name=alias_name, param_id=_param.id, source_id=_source.id))
+    dbsession.commit()
+    response = client.post(
+        f"/user/0",
+        json={
+            "source": "admin",
+            "items": [{"category": _param.category.name, "param": alias_name, "value": "should_not_work"}],
+        },
+    )
+    assert response.status_code == 404
+    info = (
+        dbsession.query(Info)
+        .filter(
+            Info.param_id == _param.id, Info.owner_id == 0, Info.source_id == admin_source.id, Info.is_deleted == False
+        )
+        .one_or_none()
+    )
+    assert info is None
+    alias = dbsession.query(ParamAlias).filter(ParamAlias.name == alias_name).one()
+    dbsession.delete(alias)
+    dbsession.commit()

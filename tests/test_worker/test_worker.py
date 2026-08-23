@@ -2,7 +2,7 @@ import pytest
 import sqlalchemy.exc
 from event_schema.auth import UserLogin
 
-from userdata_api.models.db import Category, Info, Param, Source
+from userdata_api.models.db import Category, Info, Param, ParamAlias, Source
 from userdata_api.utils.utils import random_string
 from worker.user import patch_user_info
 
@@ -108,3 +108,88 @@ def test_delete(info, dbsession):
 
     dbsession.expire(info)
     assert info.is_deleted is True
+
+
+def test_create_by_alias(param, source, dbsession):
+    alias_name = f"alias_{random_string()}"
+    alias = ParamAlias(name=alias_name, param_id=param.id, source_id=source.id)
+    dbsession.add(alias)
+    dbsession.commit()
+    patch_user_info(
+        UserLogin.model_validate(
+            {
+                "items": [{"category": param.category.name, "param": alias_name, "value": "test_by_alias"}],
+                "source": source.name,
+            }
+        ),
+        1,
+        session=dbsession,
+    )
+    info = (
+        dbsession.query(Info)
+        .filter(
+            Info.param_id == param.id, Info.source_id == source.id, Info.owner_id == 1, Info.value == "test_by_alias"
+        )
+        .one()
+    )
+    assert info
+    dbsession.delete(info)
+    dbsession.delete(alias)
+    dbsession.commit()
+
+
+def test_create_by_global_alias(param, source, dbsession):
+    alias_name = f"alias_{random_string()}"
+    alias = ParamAlias(name=alias_name, param_id=param.id, source_id=None)
+    dbsession.add(alias)
+    dbsession.commit()
+    patch_user_info(
+        UserLogin.model_validate(
+            {
+                "items": [{"category": param.category.name, "param": alias_name, "value": "test_by_global_alias"}],
+                "source": source.name,
+            }
+        ),
+        1,
+        session=dbsession,
+    )
+    info = (
+        dbsession.query(Info)
+        .filter(
+            Info.param_id == param.id,
+            Info.source_id == source.id,
+            Info.owner_id == 1,
+            Info.value == "test_by_global_alias",
+        )
+        .one()
+    )
+    assert info
+    dbsession.delete(info)
+    dbsession.delete(alias)
+    dbsession.commit()
+
+
+def test_create_by_foreign_source_alias_not_found(param, source, dbsession):
+    first_source = source
+    second_source = Source(name=f"test{random_string()}", trust_level=8)
+    dbsession.add(second_source)
+    dbsession.commit()
+    alias_name = f"alias_{random_string()}"
+    alias = ParamAlias(name=alias_name, param_id=param.id, source_id=second_source.id)
+    dbsession.add(alias)
+    dbsession.commit()
+    patch_user_info(
+        UserLogin.model_validate(
+            {
+                "items": [{"category": param.category.name, "param": alias_name, "value": "should_not_work"}],
+                "source": first_source.name,
+            }
+        ),
+        1,
+        session=dbsession,
+    )
+    with pytest.raises(sqlalchemy.exc.NoResultFound):
+        dbsession.query(Info).filter(Info.param_id == param.id, Info.value == "should_not_work").one()
+    dbsession.delete(alias)
+    dbsession.delete(second_source)
+    dbsession.commit()
