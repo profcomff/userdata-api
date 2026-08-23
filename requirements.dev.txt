@@ -1,5 +1,5 @@
 autoflake
-black==23.11.0
+black
 httpx
 isort
 pytest

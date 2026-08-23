@@ -10,7 +10,6 @@ from userdata_api.models.db import Category
 from userdata_api.schemas.category import CategoryGet, CategoryPatch, CategoryPost
 from userdata_api.schemas.response_model import StatusResponseModel
 
-
 category = APIRouter(prefix="/category", tags=["Category"])
 
 

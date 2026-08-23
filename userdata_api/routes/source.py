@@ -10,7 +10,6 @@ from userdata_api.models.db import Source
 from userdata_api.schemas.response_model import StatusResponseModel
 from userdata_api.schemas.source import SourceGet, SourcePatch, SourcePost
 
-
 source = APIRouter(prefix="/source", tags=["Source"])
 
 

@@ -7,7 +7,6 @@ from sqlalchemy import not_
 from userdata_api.models.db import Info, Source
 from userdata_api.utils.param_alias import get_param_by_name_or_alias
 
-
 log = logging.getLogger(__name__)
 
 

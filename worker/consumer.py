@@ -11,7 +11,6 @@ from worker.kafka import KafkaConsumer
 
 from .user import patch_user_info
 
-
 log = logging.getLogger(__name__)
 settings = get_settings()
 consumer = KafkaConsumer()
