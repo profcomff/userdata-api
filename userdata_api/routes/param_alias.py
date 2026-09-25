@@ -48,7 +48,8 @@ async def create_param_alias(
     Создать алиас параметра.
     """
     _ = Param.get(session=db.session, id=param_id)
-    _ = Source.get(session=db.session, id=alias_inp.source_id)
+    if alias_inp.source_id:
+        _ = Source.get(session=db.session, id=alias_inp.source_id)
     _check_alias_name_exists(alias_inp.name)
     alias = ParamAlias.create(session=db.session, param_id=param_id, **alias_inp.model_dump())
     return ParamAliasGet.model_validate(alias)
