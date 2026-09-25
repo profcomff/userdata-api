@@ -9,7 +9,6 @@ Create Date: 2026-05-16 12:10:00.000000
 import sqlalchemy as sa
 from alembic import op
 
-
 # revision identifiers, used by Alembic.
 revision = '8b49f52e2c01'
 down_revision = 'fc911d58459b'
@@ -36,7 +35,6 @@ def upgrade():
             ['source.id'],
         ),
         sa.PrimaryKeyConstraint('id'),
-        sa.UniqueConstraint('name'),
     )
 
 
