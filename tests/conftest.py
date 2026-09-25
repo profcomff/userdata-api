@@ -15,11 +15,20 @@ def client(auth_mock):
 
 
 @pytest.fixture(scope='session')
-def dbsession():
+def shared_dbsession():
     settings = get_settings()
     engine = create_engine(str(settings.DB_DSN))
     TestingSessionLocal = sessionmaker(bind=engine)
     yield TestingSessionLocal()
+
+
+@pytest.fixture()
+def dbsession(shared_dbsession):
+    '''
+    Более безопасный метод для избегания каскада ошибок от алхимика
+    '''
+    shared_dbsession.rollback()
+    yield shared_dbsession
 
 
 @pytest.fixture
