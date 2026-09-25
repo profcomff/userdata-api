@@ -4,7 +4,7 @@ from userdata_api.models.db import ParamAlias
 from userdata_api.utils.utils import random_string
 
 
-@pytest.mark.authenticated("userdata.param.create")
+@pytest.mark.authenticated("userdata.alias.create")
 def test_create_param_alias(client, dbsession, param, source):
     _param = param()
     _source = source()
@@ -25,7 +25,7 @@ def test_create_param_alias(client, dbsession, param, source):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.param.create")
+@pytest.mark.authenticated("userdata.alias.create")
 def test_create_param_alias_global(client, dbsession, param):
     _param = param()
     alias_name = f"alias_{random_string()}"
@@ -43,7 +43,7 @@ def test_create_param_alias_global(client, dbsession, param):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.param.create")
+@pytest.mark.authenticated("userdata.alias.create")
 def test_create_param_alias_unique_whole_table(client, dbsession, param):
     _param1 = param()
     _param2 = param()
@@ -63,7 +63,7 @@ def test_create_param_alias_unique_whole_table(client, dbsession, param):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.param.create")
+@pytest.mark.authenticated("userdata.alias.create")
 def test_get_param_aliases(client, dbsession, param, source):
     _param = param()
     _source = source()
@@ -88,7 +88,34 @@ def test_get_param_aliases(client, dbsession, param, source):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.param.create", "userdata.param.update")
+@pytest.mark.authenticated("userdata.alias.create", "userdata.alias.update")
+def test_patch_param_alias_none_name(client, dbsession, param, source):
+    _param = param()
+    _source = source()
+    _new_source = source()
+    alias_name = f"alias_{random_string()}"
+    create = client.post(
+        f"/param/{_param.id}/alias",
+        json={"name": alias_name, "source_id": _source.id},
+    )
+    assert create.status_code == 200
+    alias_id = create.json()["id"]
+    response = client.patch(
+        f"/param/{_param.id}/alias/{alias_id}",
+        json={"source_id": _new_source.id},
+    )
+    assert response.status_code == 200
+    assert response.json()["name"] == alias_name
+    assert response.json()["source_id"] == _new_source.id
+    dbsession.expire_all()
+    alias = ParamAlias.get(alias_id, session=dbsession)
+    assert alias.name == alias_name
+    assert alias.source_id == _new_source.id
+    dbsession.delete(alias)
+    dbsession.commit()
+
+
+@pytest.mark.authenticated("userdata.alias.create", "userdata.alias.update")
 def test_patch_param_alias(client, dbsession, param, source):
     _param = param()
     _source = source()
@@ -116,7 +143,7 @@ def test_patch_param_alias(client, dbsession, param, source):
     dbsession.commit()
 
 
-@pytest.mark.authenticated("userdata.param.create", "userdata.param.delete")
+@pytest.mark.authenticated("userdata.alias.create", "userdata.alias.delete")
 def test_delete_param_alias(client, dbsession, param):
     _param = param()
     alias_name = f"alias_{random_string()}"

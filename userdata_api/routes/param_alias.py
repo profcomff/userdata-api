@@ -1,7 +1,7 @@
 from typing import Any
 
 from auth_lib.fastapi import UnionAuth
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from fastapi_sqlalchemy import db
 from pydantic.type_adapter import TypeAdapter
 from sqlalchemy import not_
@@ -11,15 +11,7 @@ from userdata_api.models.db import Param, ParamAlias, Source
 from userdata_api.schemas.param_alias import ParamAliasGet, ParamAliasPatch, ParamAliasPost
 from userdata_api.schemas.response_model import StatusResponseModel
 
-
 param_alias = APIRouter(prefix="/param/{param_id}/alias", tags=["Param Alias"])
-
-
-def _get_param(*, param_id: int) -> Param:
-    param = Param.query(session=db.session).filter(Param.id == param_id).one_or_none()
-    if not param:
-        raise ObjectNotFound(Param, param_id)
-    return param
 
 
 def _get_param_alias(*, param_id: int, alias_id: int) -> ParamAlias:
@@ -38,16 +30,8 @@ def _get_param_alias(*, param_id: int, alias_id: int) -> ParamAlias:
     return alias
 
 
-def _validate_source(source_id: int | None) -> None:
-    if source_id is None:
-        return
-    source = Source.query(session=db.session).filter(Source.id == source_id).one_or_none()
-    if not source:
-        raise ObjectNotFound(Source, source_id)
-
-
 def _check_alias_name_exists(name: str, *, alias_id: int | None = None) -> None:
-    query = db.session.query(ParamAlias).filter(ParamAlias.name == name)
+    query = ParamAlias.query(session=db.session).filter(ParamAlias.name == name)
     if alias_id is not None:
         query = query.filter(ParamAlias.id != alias_id)
     if query.one_or_none():
@@ -56,16 +40,15 @@ def _check_alias_name_exists(name: str, *, alias_id: int | None = None) -> None:
 
 @param_alias.post("", response_model=ParamAliasGet)
 async def create_param_alias(
-    request: Request,
     param_id: int,
     alias_inp: ParamAliasPost,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.create"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.alias.create"], allow_none=False, auto_error=True)),
 ) -> ParamAliasGet:
     """
     Создать алиас параметра.
     """
-    _ = _get_param(param_id=param_id)
-    _validate_source(alias_inp.source_id)
+    _ = Param.get(session=db.session, id=param_id)
+    _ = Source.get(session=db.session, id=alias_inp.source_id)
     _check_alias_name_exists(alias_inp.name)
     alias = ParamAlias.create(session=db.session, param_id=param_id, **alias_inp.model_dump())
     return ParamAliasGet.model_validate(alias)
@@ -88,7 +71,7 @@ async def get_param_aliases(param_id: int) -> list[ParamAliasGet]:
     """
     Получить все алиасы параметра.
     """
-    _ = _get_param(param_id=param_id)
+    _ = Param.get(session=db.session, id=param_id)
     aliases = ParamAlias.query(session=db.session).filter(ParamAlias.param_id == param_id).all()
     type_adapter = TypeAdapter(list[ParamAliasGet])
     return type_adapter.validate_python(aliases)
@@ -99,7 +82,7 @@ async def patch_param_alias(
     param_id: int,
     alias_id: int,
     alias_inp: ParamAliasPatch,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.update"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.alias.update"], allow_none=False, auto_error=True)),
 ) -> ParamAliasGet:
     """
     Обновить алиас параметра.
@@ -109,17 +92,16 @@ async def patch_param_alias(
     if "name" in patch_data:
         _check_alias_name_exists(patch_data["name"], alias_id=alias.id)
     if "source_id" in patch_data:
-        _validate_source(patch_data["source_id"])
+        _ = Source.get(session=db.session, id=patch_data["source_id"])
     alias = ParamAlias.update(alias.id, session=db.session, **patch_data)
     return ParamAliasGet.model_validate(alias)
 
 
 @param_alias.delete("/{alias_id}", response_model=StatusResponseModel)
 async def delete_param_alias(
-    request: Request,
     param_id: int,
     alias_id: int,
-    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.param.delete"], allow_none=False, auto_error=True)),
+    _: dict[str, Any] = Depends(UnionAuth(scopes=["userdata.alias.delete"], allow_none=False, auto_error=True)),
 ) -> StatusResponseModel:
     """
     Удалить алиас параметра.
